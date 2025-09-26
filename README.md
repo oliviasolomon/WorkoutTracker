@@ -21,7 +21,7 @@ git push -uf origin main
 ```
 
 ## Integrate with your tools
-
+![alt text](image.png)
 - [ ] [Set up project integrations](https://code.vt.edu/jbrent22/workouttracker/-/settings/integrations)
 
 ## Collaborate with your team
