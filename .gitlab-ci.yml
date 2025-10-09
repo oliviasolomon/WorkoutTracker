@@ -2,8 +2,6 @@ stages:
     - deploy
 pages:
   stage: deploy
-  tags:
-    - shared
   script:
     - mkdir -p public
     - cp index.html public/
