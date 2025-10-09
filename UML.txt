@@ -1,0 +1,4 @@
+https://lucid.app/lucidchart/9b4c8497-ced0-440c-8882-9b4ce9902555/edit?viewport_loc=-1164%2C-609%2C2337%2C1175%2C0_0&invitationId=inv_d9c3e3d9-d20e-4a75-97d4-3f9a3b5c0413
+^ Link to the current lucidchart of our UML, I've been working on it for a bit
+
+I'm thinking of having it set up as a database of set workouts so people can track their lifts with a specific workout.
