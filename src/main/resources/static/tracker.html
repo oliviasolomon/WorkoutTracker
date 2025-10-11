@@ -12,6 +12,7 @@
     <input id="exercise" placeholder="Exercise" required>
     <input id="sets" type="number" placeholder="Sets" required>
     <input id="reps" type="number" placeholder="Reps" required>
+    <input id="weight" type="number" step="0.1" placeholder="Weight (lbs/kg)">
     <button type="submit">Add Workout</button>
   </form>
 
@@ -29,7 +30,7 @@
       workoutsList.innerHTML = '';
       workouts.forEach(w => {
         const li = document.createElement('li');
-        li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps`;
+        li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps${w.weight ? ' @ ' + w.weight : ''}`;
         workoutsList.appendChild(li);
       });
     }
@@ -39,8 +40,9 @@
       e.preventDefault();
       const workout = {
         exercise: document.getElementById('exercise').value,
-        sets: document.getElementById('sets').value,
-        reps: document.getElementById('reps').value
+        sets: Number(document.getElementById('sets').value),
+        reps: Number(document.getElementById('reps').value),
+        weight: document.getElementById('weight').value ? Number(document.getElementById('weight').value) : null
       };
       await fetch('/api/workouts', {
         method: 'POST',
