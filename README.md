@@ -1,51 +1,37 @@
-# Workout Tracker 
+# workout tracker 
 
-Project Structure:
+project structure:
 
-workout-tracker/
+workouttracker/
 
-├── Dockerfile
-
-├── .dockerignore
-
-├── .gitignore
-
-├── .gitlab-ci.yml
-
-├── README.md
-
-├── pom.xml
+├── pom.xml    
 
 ├── src/
 
 │   ├── main/
 
-│   │   ├── java/
+│   │   ├── java/edu/vt/workout/
 
-│   │   │   └── edu/vt/workout/
+│   │   │   ├── WorkoutTrackerApplication.java
 
-│   │   │       ├── WorkoutTrackerApplication.java       # main app
+│   │   │   ├── controller/WorkoutController.java
 
-│   │   │       ├── controller/
+│   │   │   ├── model/Workout.java
 
-│   │   │       │   ├── ExerciseController.java         # handles /api/exercises
-
-│   │   │       │   └── WorkoutController.java          # handles /api/workouts
-
-│   │   │       └── model/
-
-│   │   │           └── Workout.java                    # workout entity/model
-
-|   |   |           └── WorkoutRowMapper.java           #
+│   │   │   └── repo/WorkoutRowMapper.java
 
 │   │   └── resources/
 
-│   │       ├── application.properties                  # spring boot config
+│   │       ├── application.properties
+
+│   │       ├── schema.sql
 
 │   │       └── static/
 
-│   │           ├── tracker.html                        # frontend html
+│   │           ├── index.html
 
-│   │           ├── style.css                           # CSS
+│   │           ├── tracker.html
 
-│   │           └── index.html                          # frontend html
+│   │           └── style.css
+
+├── .gitignore (exclude target/ and data/)
