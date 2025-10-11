@@ -1,6 +1,4 @@
-# ==========================
 # Stage 1: Build
-# ==========================
 FROM maven:3.9-eclipse-temurin-17 AS build
 
 # Set working directory
@@ -9,28 +7,26 @@ WORKDIR /workspace
 # Copy only pom.xml first to leverage Docker cache for dependencies
 COPY pom.xml .
 
-# Download dependencies (offline) — speeds up subsequent builds
+# Download dependencies offline
 RUN mvn dependency:go-offline
 
-# Copy source code
+# Copy the full source code
 COPY src ./src
 
-# Build the app
+# Package the application
 RUN mvn package -DskipTests
 
-# ==========================
-# Stage 2: Runtime
-# ==========================
+# Stage 2: Run
 FROM eclipse-temurin:17-jdk-alpine
 
-# Set working directory in runtime container
+# Set working directory in container
 WORKDIR /app
 
-# Copy jar from build stage
+# Copy the JAR from the build stage
 COPY --from=build /workspace/target/*.jar app.jar
 
-# Expose port (adjust if different)
+# Expose port (adjust if your app uses a different port)
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java","-jar","app.jar"]
+# Run the app
+ENTRYPOINT ["java", "-jar", "app.jar"]
