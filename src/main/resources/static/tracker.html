@@ -13,7 +13,8 @@
     <input id="sets" type="number" placeholder="Sets" required>
     <input id="reps" type="number" placeholder="Reps" required>
     <input id="weight" type="number" step="0.1" placeholder="Weight (lbs/kg)">
-    <button type="submit">Add</button>
+    <input id="muscle_group" placeholder="Muscle Group (optional)">
+    <button type="submit">Add Workout</button>
   </form>
 
   <h2>Your Workouts</h2>
@@ -23,36 +24,61 @@
     const workoutsList = document.getElementById('workouts-list');
     const form = document.getElementById('workout-form');
 
-    // Fetch existing workouts
+    // Fetch existing workouts from backend
     async function fetchWorkouts() {
-      const res = await fetch('/api/workouts');
-      const workouts = await res.json();
-      workoutsList.innerHTML = '';
-      workouts.forEach(w => {
-        const li = document.createElement('li');
-        li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps${w.weight ? ' @ ' + w.weight : ''}`;
-        workoutsList.appendChild(li);
-      });
+      try {
+        const res = await fetch('/api/workouts');
+        if (!res.ok) throw new Error('Failed to fetch workouts');
+        const workouts = await res.json();
+        workoutsList.innerHTML = '';
+        workouts.forEach(w => {
+          const li = document.createElement('li');
+          li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps` +
+                           `${w.weight ? ' @ ' + w.weight : ''}` +
+                           `${w.muscle_group ? ' (' + w.muscle_group + ')' : ''}`;
+          workoutsList.appendChild(li);
+        });
+      } catch (err) {
+        console.error(err);
+        workoutsList.innerHTML = '<li>Error loading workouts.</li>';
+      }
     }
 
     // Add new workout
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const workout = {
         exercise: document.getElementById('exercise').value,
         sets: Number(document.getElementById('sets').value),
         reps: Number(document.getElementById('reps').value),
-        weight: document.getElementById('weight').value ? Number(document.getElementById('weight').value) : null
+        weight: document.getElementById('weight').value ? Number(document.getElementById('weight').value) : null,
+        muscle_group: document.getElementById('muscle_group').value || null
       };
-      await fetch('/api/workouts', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(workout)
-      });
-      form.reset();
-      fetchWorkouts();
+
+      try {
+        const res = await fetch('/api/workouts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(workout)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert('Error adding workout: ' + (err.error || 'Unknown error'));
+          return;
+        }
+
+        form.reset();
+        await fetchWorkouts(); // refresh list after successful POST
+
+      } catch (err) {
+        console.error(err);
+        alert('Failed to add workout.');
+      }
     });
 
+    // Initial fetch
     fetchWorkouts();
   </script>
 </body>
