@@ -1,0 +1,10 @@
+CREATE TABLE IF NOT EXISTS workouts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL DEFAULT 1,
+  exercise_name VARCHAR(255) NOT NULL,
+  muscle_group VARCHAR(100),
+  sets INT NOT NULL CHECK (sets >= 0),
+  reps INT NOT NULL CHECK (reps >= 0),
+  weight DOUBLE,
+  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
+);
