@@ -2,74 +2,59 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Workout Tracker</title>
-  <link rel="stylesheet" href="style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 20px auto;
+    }
+    input, button {
+      padding: 8px;
+      margin: 5px 0;
+      font-size: 16px;
+    }
+    #workout-list li {
+      margin: 5px 0;
+    }
+  </style>
 </head>
 <body>
-  <h1>Workout Tracker</h1>
+  <h1>Record a Workout</h1>
 
   <form id="workout-form">
-    <select id="exercise" required>
-      <option value="">Select Exercise</option>
-    </select>
+    <input id="exercise" placeholder="Exercise" required>
     <input id="sets" type="number" placeholder="Sets" required>
-    <input id="reps" type="number" placeholder="Reps" required>
-    <input id="weight" type="number" placeholder="Weight (optional)">
-    <button type="submit">Add Workout</button>
+    <button type="submit">Add</button>
   </form>
 
   <h2>Your Workouts</h2>
-  <ul id="workouts-list"></ul>
+  <ul id="workout-list"></ul>
 
   <script>
-    const workoutsList = document.getElementById('workouts-list');
-    const form = document.getElementById('workout-form');
-    const exerciseSelect = document.getElementById('exercise');
+    const form = document.getElementById("workout-form");
+    const list = document.getElementById("workout-list");
 
-    // Populate dropdown from backend
-    async function loadExercises() {
-      const res = await fetch('/api/exercises');
-      const exercises = await res.json();
-      exercises.forEach(ex => {
-        const opt = document.createElement('option');
-        opt.value = ex;
-        opt.textContent = ex;
-        exerciseSelect.appendChild(opt);
-      });
-    }
+    form.addEventListener("submit", function(event) {
+      event.preventDefault(); // Stop page reload
 
-    // Fetch existing workouts
-    async function fetchWorkouts() {
-      const res = await fetch('/api/workouts');
-      const workouts = await res.json();
-      workoutsList.innerHTML = '';
-      workouts.forEach(w => {
-        const li = document.createElement('li');
-        li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` - ${w.weight} lbs` : '');
-        workoutsList.appendChild(li);
-      });
-    }
+      const exercise = document.getElementById("exercise").value.trim();
+      const sets = document.getElementById("sets").value.trim();
 
-    // Add new workout
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const workout = {
-        exercise: exerciseSelect.value,
-        sets: parseInt(document.getElementById('sets').value),
-        reps: parseInt(document.getElementById('reps').value),
-        weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null
-      };
-      await fetch('/api/workouts', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(workout)
-      });
+      if (!exercise || !sets) return; // Skip empty inputs
+
+      // Create new list item
+      const li = document.createElement("li");
+      li.textContent = `${exercise} - ${sets} sets`;
+
+      // Append to the list
+      list.appendChild(li);
+
+      // Clear inputs
       form.reset();
-      fetchWorkouts();
+      document.getElementById("exercise").focus();
     });
-
-    loadExercises();    // populate dropdown first
-    fetchWorkouts();    // fetch workouts
   </script>
 </body>
 </html>
