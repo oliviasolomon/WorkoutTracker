@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/workouts")
-@CrossOrigin
+@CrossOrigin(origins = "https://workouttracker25.netlify.app")
 public class WorkoutController {
 
   @Autowired
