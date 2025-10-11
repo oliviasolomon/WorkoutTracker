@@ -26,7 +26,7 @@
     const form = document.getElementById('workout-form');
     const exerciseSelect = document.getElementById('exercise');
 
-    // show dropdown from backend
+    // Populate dropdown from backend
     async function loadExercises() {
       try {
         const res = await fetch('/api/exercises');
@@ -42,7 +42,7 @@
       }
     }
 
-    // get existing workouts
+    // Fetch existing workouts
     async function fetchWorkouts() {
       try {
         const res = await fetch('/api/workouts');
@@ -58,7 +58,7 @@
       }
     }
 
-    // add new workout
+    // Add new workout
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const workout = {
@@ -75,7 +75,7 @@
           body: JSON.stringify(workout)
         });
 
-        // update the list without re-fetching
+        // Immediately update the list without re-fetching
         const li = document.createElement('li');
         li.textContent = `${workout.exercise} - ${workout.sets} sets x ${workout.reps} reps` + (workout.weight ? ` - ${workout.weight} lbs` : '');
         workoutsList.appendChild(li);
@@ -86,7 +86,7 @@
       }
     });
 
-    // initialize
+    // Initialize
     loadExercises();
     fetchWorkouts();
   </script>
