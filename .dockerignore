@@ -1,4 +1,7 @@
-target
-data
-.DS_Store
-.git
+target/
+*.log
+*.jar
+*.class
+.idea/
+.vscode/
+.env
