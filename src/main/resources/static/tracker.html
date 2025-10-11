@@ -15,7 +15,7 @@
     <input id="sets" type="number" placeholder="Sets" required>
     <input id="reps" type="number" placeholder="Reps" required>
     <input id="weight" type="number" placeholder="Weight (optional)">
-    <button type="submit">Add Workout</button>
+    <button type="submit">Add</button>
   </form>
 
   <h2>Your Workouts</h2>
@@ -28,29 +28,34 @@
 
     // Populate dropdown from backend
     async function loadExercises() {
-      const res = await fetch('/api/exercises');
-      const exercises = await res.json();
-      exercises.forEach(ex => {
-        const opt = document.createElement('option');
-        opt.value = ex;
-        opt.textContent = ex;
-        exerciseSelect.appendChild(opt);
-      });
-    }
-
-    // Render a single workout in the list
-    function renderWorkout(w) {
-      const li = document.createElement('li');
-      li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` - ${w.weight} lbs` : '');
-      workoutsList.appendChild(li);
+      try {
+        const res = await fetch('/api/exercises');
+        const exercises = await res.json();
+        exercises.forEach(ex => {
+          const opt = document.createElement('option');
+          opt.value = ex;
+          opt.textContent = ex;
+          exerciseSelect.appendChild(opt);
+        });
+      } catch (err) {
+        console.error('Failed to load exercises:', err);
+      }
     }
 
     // Fetch existing workouts
     async function fetchWorkouts() {
-      const res = await fetch('/api/workouts');
-      const workouts = await res.json();
-      workoutsList.innerHTML = '';
-      workouts.forEach(renderWorkout);
+      try {
+        const res = await fetch('/api/workouts');
+        const workouts = await res.json();
+        workoutsList.innerHTML = '';
+        workouts.forEach(w => {
+          const li = document.createElement('li');
+          li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` - ${w.weight} lbs` : '');
+          workoutsList.appendChild(li);
+        });
+      } catch (err) {
+        console.error('Failed to fetch workouts:', err);
+      }
     }
 
     // Add new workout
@@ -63,24 +68,27 @@
         weight: document.getElementById('weight').value ? parseFloat(document.getElementById('weight').value) : null
       };
 
-      // Post to backend
-      const res = await fetch('/api/workouts', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify(workout)
-      });
+      try {
+        await fetch('/api/workouts', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(workout)
+        });
 
-      if (res.ok) {
-        renderWorkout(workout); // Immediately show workout
+        // Immediately update the list without re-fetching
+        const li = document.createElement('li');
+        li.textContent = `${workout.exercise} - ${workout.sets} sets x ${workout.reps} reps` + (workout.weight ? ` - ${workout.weight} lbs` : '');
+        workoutsList.appendChild(li);
+
         form.reset();
-        exerciseSelect.focus();
-      } else {
-        alert('Failed to add workout.');
+      } catch (err) {
+        console.error('Failed to add workout:', err);
       }
     });
 
-    loadExercises();    // populate dropdown first
-    fetchWorkouts();    // fetch existing workouts
+    // Initialize
+    loadExercises();
+    fetchWorkouts();
   </script>
 </body>
 </html>
