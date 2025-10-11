@@ -1,18 +1,27 @@
-# Workout Tracker (Spring Boot)
+# Workout Tracker 
 
-Minimal Spring Boot project serving static frontend under `/` and API under `/api/workouts`.
-
-Important files:
-- `pom.xml` - Maven build
-- `src/main/java/...` - Java sources
-- `src/main/resources/static` - index.html, tracker.html, style.css
-- `.gitlab-ci.yml` - optional CI to trigger Render deploy (set RENDER_API_KEY & RENDER_SERVICE_ID in GitLab CI variables)
-
-Local run:
-1. mvn -B -DskipTests package
-2. java -jar target/*.jar
-3. Visit: http://localhost:5000/tracker.html
-
-Notes:
-- Do not commit `data/` (H2 DB files) or `target/`.
-- For GitLab Pages: static files are in `src/main/resources/static` but Pages only serves static; deploy backend separately.
+Project Structure
+workout-tracker/
+├── Dockerfile
+├── .dockerignore
+├── .gitignore
+├── .gitlab-ci.yml
+├── README.md
+├── pom.xml
+├── src/
+│   ├── main/
+│   │   ├── java/
+│   │   │   └── edu/vt/workout/
+│   │   │       ├── WorkoutTrackerApplication.java       # main app
+│   │   │       ├── controller/
+│   │   │       │   ├── ExerciseController.java         # handles /api/exercises
+│   │   │       │   └── WorkoutController.java          # handles /api/workouts
+│   │   │       └── model/
+│   │   │           └── Workout.java                    # workout entity/model
+|   |   |           └── WorkoutRowMapper.java           #
+│   │   └── resources/
+│   │       ├── application.properties                  # spring boot config
+│   │       └── static/
+│   │           ├── tracker.html                        # frontend html
+│   │           ├── style.css                           # CSS
+│   │           └── index.html                          # frontend html
