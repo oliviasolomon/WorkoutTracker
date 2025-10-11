@@ -1,14 +1,19 @@
-# Stage 1: build
-FROM maven:3.9-eclipse-temurin-17 AS build
-WORKDIR /workspace
+# Use Maven + JDK in a single stage to build and run
+FROM maven:3.9-eclipse-temurin-17
+
+# Set working directory
+WORKDIR /app
+
+# Copy pom.xml and source
 COPY pom.xml .
 COPY src ./src
+
+# Package the application
 RUN mvn -B -DskipTests package
 
-# Stage 2: run
-FROM eclipse-temurin:17-jre-jammy
-WORKDIR /app
-COPY --from=build /workspace/target/*.jar app.jar
-EXPOSE 5000
+# Set environment variable for port
 ENV PORT=5000
-ENTRYPOINT ["sh","-c","java -jar /app/app.jar"]
+EXPOSE 5000
+
+# Run the JAR
+CMD ["sh", "-c", "java -jar target/*.jar"]
