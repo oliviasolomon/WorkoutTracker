@@ -4,12 +4,33 @@
   <meta charset="UTF-8">
   <title>Workout Tracker</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    /* Simple dropdown styling */
+    #exercise-dropdown {
+      border: 1px solid #ccc;
+      max-height: 150px;
+      overflow-y: auto;
+      position: absolute;
+      background: white;
+      width: 200px;
+      display: none;
+      z-index: 1000;
+    }
+    #exercise-dropdown div {
+      padding: 5px;
+      cursor: pointer;
+    }
+    #exercise-dropdown div:hover {
+      background-color: #eee;
+    }
+  </style>
 </head>
 <body>
   <h1>Workout Tracker</h1>
 
-  <form id="workout-form">
-    <input id="exercise" placeholder="Exercise" required>
+  <form id="workout-form" style="position: relative;">
+    <input id="exercise" placeholder="Exercise" autocomplete="off" required>
+    <div id="exercise-dropdown"></div>
     <input id="sets" type="number" placeholder="Sets" required>
     <input id="reps" type="number" placeholder="Reps" required>
     <input id="weight" type="number" step="0.1" placeholder="Weight (lbs/kg)">
@@ -23,6 +44,62 @@
   <script>
     const workoutsList = document.getElementById('workouts-list');
     const form = document.getElementById('workout-form');
+    const exerciseInput = document.getElementById('exercise');
+    const dropdown = document.getElementById('exercise-dropdown');
+
+    // Exercises fetched from backend
+    let exercises = [];
+
+    async function fetchExercises() {
+      try {
+        const res = await fetch('/api/exercises');
+        if (!res.ok) throw new Error('Failed to fetch exercises');
+        exercises = await res.json();
+      } catch (err) {
+        console.error(err);
+        exercises = [];
+      }
+    }
+
+    fetchExercises(); // fetch on page load
+
+    function filterExercises(query) {
+      return exercises.filter(ex => ex.toLowerCase().startsWith(query.toLowerCase()));
+    }
+
+    function showDropdown(matches) {
+      dropdown.innerHTML = '';
+      if (matches.length === 0) {
+        dropdown.style.display = 'none';
+        return;
+      }
+      matches.forEach(ex => {
+        const div = document.createElement('div');
+        div.textContent = ex;
+        div.addEventListener('click', () => {
+          exerciseInput.value = ex;
+          dropdown.style.display = 'none';
+        });
+        dropdown.appendChild(div);
+      });
+      dropdown.style.display = 'block';
+    }
+
+    exerciseInput.addEventListener('input', () => {
+      const query = exerciseInput.value.trim();
+      if (query === '') {
+        dropdown.style.display = 'none';
+        return;
+      }
+      const matches = filterExercises(query);
+      showDropdown(matches);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!form.contains(e.target)) {
+        dropdown.style.display = 'none';
+      }
+    });
 
     // Fetch existing workouts from backend
     async function fetchWorkouts() {
@@ -49,7 +126,7 @@
       e.preventDefault();
 
       const workout = {
-        exercise: document.getElementById('exercise').value,
+        exercise: exerciseInput.value.trim(),
         sets: Number(document.getElementById('sets').value),
         reps: Number(document.getElementById('reps').value),
         weight: document.getElementById('weight').value ? Number(document.getElementById('weight').value) : null,
@@ -70,7 +147,9 @@
         }
 
         form.reset();
-        await fetchWorkouts(); // refresh list after successful POST
+        dropdown.style.display = 'none';
+        await fetchWorkouts();    // refresh list
+        await fetchExercises();   // refresh exercise dropdown with new exercise
 
       } catch (err) {
         console.error(err);
@@ -78,7 +157,7 @@
       }
     });
 
-    // Initial fetch
+    // Initial fetch of workouts
     fetchWorkouts();
   </script>
 </body>
