@@ -14,7 +14,7 @@
     </select>
     <input id="sets" type="number" placeholder="Sets" required>
     <input id="reps" type="number" placeholder="Reps" required>
-    <input id="weight" type="number" placeholder="Weight (optional)">
+    <input id="weight" type="number" placeholder="Weight">
     <button type="submit">Add</button>
   </form>
 
@@ -50,7 +50,7 @@
         workoutsList.innerHTML = '';
         workouts.forEach(w => {
           const li = document.createElement('li');
-          li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` - ${w.weight} lbs` : '');
+          li.textContent = `${w.exercise}: ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` x ${w.weight} lbs` : '');
           workoutsList.appendChild(li);
         });
       } catch (err) {
