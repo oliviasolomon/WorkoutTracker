@@ -34,4 +34,10 @@ workouttracker/
 
 │   │           └── style.css
 
-├── .gitignore (exclude target/ and data/)
+├── .gitignore
+
+├── .dockerignore
+
+├── Docker
+
+├── .gitlab-ci.yml
