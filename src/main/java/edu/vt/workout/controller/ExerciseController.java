@@ -14,9 +14,6 @@ public class ExerciseController {
     @Autowired
     private JdbcTemplate jdbc;
 
-    /**
-     * Returns all predefined exercises for the dropdown.
-     */
     @GetMapping
     public List<String> listExercises() {
         String sql = "SELECT name FROM exercises ORDER BY name ASC";
