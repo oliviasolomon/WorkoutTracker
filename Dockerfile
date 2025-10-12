@@ -1,6 +1,4 @@
 # Multi-stage Dockerfile for WorkoutTracker (Maven build + lightweight runtime)
-# Paste this as ./Dockerfile in your project root.
-
 # -------------------------
 # Build stage
 # -------------------------
