@@ -1,28 +1,35 @@
 package edu.vt.workout.service;
 
-import com.example.workouttracker.model.User;
-import com.example.workouttracker.repository.UserRepository;
+import edu.vt.workout.model.User;
+import edu.vt.workout.repo.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UserService {
+
     private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
+    @Autowired
     public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
-    public User registerUser(String username, String email, String password) throws Exception {
-        if (userRepository.existsByUsername(username)) {
-            throw new Exception("Username already taken");
-        }
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 
-        User user = new User();
-        user.setUsername(username);
-        user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(password));
+    public User createUser(String username, String password) {
+        String hash = passwordEncoder.encode(password);
+        User user = new User(username, hash);
         return userRepository.save(user);
+    }
+
+    public boolean checkPassword(User user, String password) {
+        return passwordEncoder.matches(password, user.getPasswordHash());
     }
 }
