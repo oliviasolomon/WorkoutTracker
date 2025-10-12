@@ -15,24 +15,28 @@
   <p>Already have an account? <a href="login.html">Login here</a></p>
 
   <script>
-    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+    const form = document.getElementById('signup-form');
+
+    form.addEventListener('submit', async (e) => {
       e.preventDefault();
+
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
       try {
         const res = await fetch('/api/auth/signup', {
           method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({username, password})
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
         });
-        const data = await res.text(); // API returns "registered" on success
+
         if (!res.ok) {
-          alert(data || 'Signup failed');
+          const errorText = await res.text();
+          alert(errorText || 'Signup failed');
           return;
         }
 
-        localStorage.setItem('username', username);
+        // Redirect to tracker.html after successful signup
         window.location.href = 'tracker.html';
       } catch (err) {
         console.error(err);
