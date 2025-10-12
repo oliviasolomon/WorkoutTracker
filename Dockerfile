@@ -1,26 +1,51 @@
-# Multi-stage Dockerfile — proven, tag-only base images
+# Multi-stage Dockerfile for WorkoutTracker (Maven build + lightweight runtime)
+# Paste this as ./Dockerfile in your project root.
+
+# -------------------------
 # Build stage
+# -------------------------
 FROM maven:3.9-eclipse-temurin-17 AS build
 
+# Build context
 WORKDIR /app
 
-# Copy only what we need early so Docker layer caching helps in future builds
-COPY pom.xml .
+# Copy maven files first to leverage cache for dependencies
+COPY pom.xml mvnw* ./
+COPY .mvn .mvn
+
+# If you use a typical Maven repo layout, copy only pom first, download deps, then copy source
+RUN mvn -B -ntp -DskipTests dependency:go-offline
+
+# Copy source and package
 COPY src ./src
+RUN mvn -B -ntp -DskipTests package
 
-# Build the application (skip tests for faster CI builds)
-RUN mvn -B -DskipTests package
-
+# -------------------------
 # Runtime stage
+# -------------------------
 FROM eclipse-temurin:17-jre-jammy
 
+# Create a directory for persistent DB file and make it a mount point
+RUN mkdir -p /data \
+    && chmod 755 /data
+
+# App working dir
 WORKDIR /app
 
-# Copy the Spring Boot jar produced in the build stage
+# Copy jar from build stage (assumes single artifact in target)
 COPY --from=build /app/target/*.jar app.jar
 
-ENV JAVA_OPTS=""
-
+# Expose port (Render sets PORT env; default 8080 locally)
 EXPOSE 8080
 
-ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
+# Make /data a volume so Render or Docker can mount persistent storage
+VOLUME ["/data"]
+
+# Recommended environment variables (can be overridden)
+ENV PORT=8080 \
+    JAVA_OPTS=""
+
+# Entrypoint
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar --server.port=${PORT}"]
+
+# End of Dockerfile
