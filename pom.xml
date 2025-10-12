@@ -12,13 +12,20 @@
   <name>workout-tracker</name>
   <description>Workout Tracker application (no Thymeleaf / no Spring Security)</description>
 
+  <!-- Inherit versions from Spring Boot -->
+  <parent>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-parent</artifactId>
+    <version>3.3.4</version>
+    <relativePath/> <!-- lookup parent from repository -->
+  </parent>
+
   <properties>
     <java.version>17</java.version>
-    <spring.boot.version>3.3.4</spring.boot.version>
   </properties>
 
   <dependencies>
-    <!-- Spring Boot starters (web + data-jpa) -->
+    <!-- Web + JPA -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
@@ -29,21 +36,21 @@
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
 
-    <!-- H2 database (for dev / in-memory) -->
+    <!-- H2 runtime DB -->
     <dependency>
       <groupId>com.h2database</groupId>
       <artifactId>h2</artifactId>
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Lombok (optional but handy; remove if you don't use it) -->
+    <!-- Lombok (optional) -->
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
       <optional>true</optional>
     </dependency>
 
-    <!-- Test -->
+    <!-- Tests -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
@@ -53,24 +60,21 @@
 
   <build>
     <plugins>
-      <!-- Spring Boot plugin -->
+      <!-- Spring Boot plugin: creates executable jar -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
-        <version>${spring.boot.version}</version>
         <configuration>
           <mainClass>edu.vt.workout.WorkoutTrackerApplication</mainClass>
         </configuration>
       </plugin>
 
-      <!-- Compiler -->
+      <!-- Compiler plugin -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.11.0</version>
         <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
           <release>${java.version}</release>
         </configuration>
       </plugin>
