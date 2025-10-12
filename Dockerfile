@@ -12,8 +12,6 @@ WORKDIR /app
 # Copy maven files first to leverage cache for dependencies
 COPY pom.xml mvnw* ./
 COPY .mvn .mvn
-
-# If you use a typical Maven repo layout, copy only pom first, download deps, then copy source
 RUN mvn -B -ntp -DskipTests dependency:go-offline
 
 # Copy source and package
