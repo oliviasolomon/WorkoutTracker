@@ -47,26 +47,28 @@ public class WorkoutController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Map<String,Object> body) {
         try {
-            Integer userId = body.get("user_id") == null ? 1 : ((Number)body.get("user_id")).intValue();
-            String exercise = body.get("exercise") == null ? "" : String.valueOf(body.get("exercise")).trim();
-            Integer sets = body.get("sets") == null ? 0 : ((Number)body.get("sets")).intValue();
-            Integer reps = body.get("reps") == null ? 0 : ((Number)body.get("reps")).intValue();
-            Double weight = body.get("weight") == null ? null : ((Number)body.get("weight")).doubleValue();
+            final Integer userId = body.get("user_id") == null ? 1 : ((Number)body.get("user_id")).intValue();
+            final String exercise = body.get("exercise") == null ? "" : String.valueOf(body.get("exercise")).trim();
+            final Integer sets = body.get("sets") == null ? 0 : ((Number)body.get("sets")).intValue();
+            final Integer reps = body.get("reps") == null ? 0 : ((Number)body.get("reps")).intValue();
+            final Double weight = body.get("weight") == null ? null : ((Number)body.get("weight")).doubleValue();
 
             if (exercise.isEmpty() || sets < 0 || reps < 0) {
                 return ResponseEntity.badRequest().body(Map.of("error","invalid input"));
             }
 
-            String muscle = null;
+            // determine muscle group (may be null)
+            String muscleTemp = null;
             try {
-                muscle = jdbc.queryForObject(
+                muscleTemp = jdbc.queryForObject(
                     "SELECT muscle_group FROM exercises WHERE name = ?",
                     new Object[]{exercise},
                     String.class
                 );
             } catch (Exception ignored) { }
+            final String muscle = muscleTemp; // make effectively final for lambda below
 
-            String sql = "INSERT INTO workouts (user_id, exercise_name, sets, reps, weight, muscle_group) VALUES (?, ?, ?, ?, ?, ?)";
+            final String sql = "INSERT INTO workouts (user_id, exercise_name, sets, reps, weight, muscle_group) VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbc.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
