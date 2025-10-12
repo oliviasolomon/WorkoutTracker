@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/workouts")
-@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080"})
+@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080", "http://localhost:3000"})
 public class WorkoutController {
 
     private final JdbcTemplate jdbc;
@@ -57,7 +57,6 @@ public class WorkoutController {
                 return ResponseEntity.badRequest().body(Map.of("error","invalid input"));
             }
 
-            // Try to find muscle_group for the exercise; if not found, leave null
             String muscle = null;
             try {
                 muscle = jdbc.queryForObject(
@@ -84,7 +83,7 @@ public class WorkoutController {
             Long newId = key != null ? key.longValue() : null;
             if (newId == null) return ResponseEntity.status(500).body(Map.of("error","insert failed"));
 
-            Workout w = jdbc.queryForObject("SELECT * FROM workouts WHERE id = ?", new Object[]{newId}, new WorkoutRowMapper());
+            Workout w = jdbc.queryForObject("SELECT * FROM workouts WHERE id = ?", new Object[]{newId}, mapper);
             return ResponseEntity.status(201).body(w);
 
         } catch (Exception e) {
