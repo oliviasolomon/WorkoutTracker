@@ -1,3 +1,10 @@
+-- Users table for login/signup
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL
+);
+
 -- Workouts table
 CREATE TABLE workouts (
     id INT AUTO_INCREMENT PRIMARY KEY,
@@ -7,7 +14,8 @@ CREATE TABLE workouts (
     reps INT NOT NULL,
     weight DOUBLE,
     muscle_group VARCHAR(100),
-    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
 -- Predefined exercises
@@ -28,4 +36,5 @@ INSERT INTO exercises (name, muscle_group) VALUES
 ('Pull-Up','Back'),
 ('Lat Pulldown','Back'),
 ('Push-Up','Chest'),
-('Lunge','Legs');
+('Lunge','Legs')
+ON DUPLICATE KEY UPDATE name = name;
