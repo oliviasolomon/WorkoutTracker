@@ -16,13 +16,16 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/workouts")
-@CrossOrigin(origins = {"https://workouttracker25.netlify.app", "http://localhost:8080"})
+@CrossOrigin(origins = "*")
 public class WorkoutController {
 
-    @Autowired
-    private JdbcTemplate jdbc;
-
+    private final JdbcTemplate jdbc;
     private final WorkoutRowMapper mapper = new WorkoutRowMapper();
+
+    @Autowired
+    public WorkoutController(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
 
     @GetMapping
     public List<Workout> list(@RequestParam(value = "user_id", required = false) Integer userId) {
@@ -45,22 +48,29 @@ public class WorkoutController {
     public ResponseEntity<?> create(@RequestBody Map<String,Object> body) {
         try {
             Integer userId = body.get("user_id") == null ? 1 : ((Number)body.get("user_id")).intValue();
-            String exercise = String.valueOf(body.get("exercise")).trim();
-            Integer sets = ((Number)body.get("sets")).intValue();
-            Integer reps = ((Number)body.get("reps")).intValue();
+            // Frontend sends "exercise" string; we'll store it into workouts.exercise_name
+            String exercise = body.get("exercise") == null ? "" : String.valueOf(body.get("exercise")).trim();
+            Integer sets = body.get("sets") == null ? 0 : ((Number)body.get("sets")).intValue();
+            Integer reps = body.get("reps") == null ? 0 : ((Number)body.get("reps")).intValue();
             Double weight = body.get("weight") == null ? null : ((Number)body.get("weight")).doubleValue();
-    
-            if (exercise.isEmpty() || sets < 0 || reps < 0)
-                return ResponseEntity.badRequest().body(Map.of("error","invalid input"));
-    
-        // Lookup muscle group from exercises table
-            String muscle = jdbc.queryForObject(
-                "SELECT muscle_group FROM exercises WHERE name = ?",
-                new Object[]{exercise},
-                String.class
-            );
 
-            String sql = "INSERT INTO workouts (user_id, exercise, sets, reps, weight, muscle_group) VALUES (?, ?, ?, ?, ?, ?)";
+            if (exercise.isEmpty() || sets < 0 || reps < 0) {
+                return ResponseEntity.badRequest().body(Map.of("error","invalid input"));
+            }
+
+            // Lookup muscle group from exercises table; if not found, set to null
+            String muscle = null;
+            try {
+                muscle = jdbc.queryForObject(
+                    "SELECT muscle_group FROM exercises WHERE name = ?",
+                    new Object[]{exercise},
+                    String.class
+                );
+            } catch (Exception ignored) {
+                // muscle stays null if lookup fails
+            }
+
+            String sql = "INSERT INTO workouts (user_id, exercise_name, sets, reps, weight, muscle_group) VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbc.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -69,7 +79,7 @@ public class WorkoutController {
                 ps.setInt(3, sets);
                 ps.setInt(4, reps);
                 if (weight == null) ps.setNull(5, java.sql.Types.DOUBLE); else ps.setDouble(5, weight);
-                ps.setString(6, muscle);
+                if (muscle == null) ps.setNull(6, java.sql.Types.VARCHAR); else ps.setString(6, muscle);
                 return ps;
             }, kh);
 
@@ -84,5 +94,4 @@ public class WorkoutController {
             return ResponseEntity.status(500).body(Map.of("error","db error", "detail", e.getMessage()));
         }
     }
-
 }
