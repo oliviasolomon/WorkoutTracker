@@ -16,7 +16,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/workouts")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080"})
 public class WorkoutController {
 
     private final JdbcTemplate jdbc;
@@ -48,7 +48,6 @@ public class WorkoutController {
     public ResponseEntity<?> create(@RequestBody Map<String,Object> body) {
         try {
             Integer userId = body.get("user_id") == null ? 1 : ((Number)body.get("user_id")).intValue();
-            // Frontend sends "exercise" string; we'll store it into workouts.exercise_name
             String exercise = body.get("exercise") == null ? "" : String.valueOf(body.get("exercise")).trim();
             Integer sets = body.get("sets") == null ? 0 : ((Number)body.get("sets")).intValue();
             Integer reps = body.get("reps") == null ? 0 : ((Number)body.get("reps")).intValue();
@@ -58,7 +57,7 @@ public class WorkoutController {
                 return ResponseEntity.badRequest().body(Map.of("error","invalid input"));
             }
 
-            // Lookup muscle group from exercises table; if not found, set to null
+            // Try to find muscle_group for the exercise; if not found, leave null
             String muscle = null;
             try {
                 muscle = jdbc.queryForObject(
@@ -66,9 +65,7 @@ public class WorkoutController {
                     new Object[]{exercise},
                     String.class
                 );
-            } catch (Exception ignored) {
-                // muscle stays null if lookup fails
-            }
+            } catch (Exception ignored) { }
 
             String sql = "INSERT INTO workouts (user_id, exercise_name, sets, reps, weight, muscle_group) VALUES (?, ?, ?, ?, ?, ?)";
             KeyHolder kh = new GeneratedKeyHolder();
