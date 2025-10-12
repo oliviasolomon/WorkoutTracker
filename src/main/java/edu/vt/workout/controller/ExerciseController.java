@@ -8,14 +8,19 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/exercises")
-@CrossOrigin(origins = {"https://workouttracker25.netlify.app", "http://localhost:8080"})
+@CrossOrigin(origins = "*")
 public class ExerciseController {
 
+    private final JdbcTemplate jdbc;
+
     @Autowired
-    private JdbcTemplate jdbc;
+    public ExerciseController(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
 
     @GetMapping
     public List<String> listExercises() {
+        // assumes table "exercises" has a column "name"
         String sql = "SELECT name FROM exercises ORDER BY name ASC";
         return jdbc.queryForList(sql, String.class);
     }
