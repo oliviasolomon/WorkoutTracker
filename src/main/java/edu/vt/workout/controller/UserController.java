@@ -1,106 +1,84 @@
 package edu.vt.workout.controller;
 
-import jakarta.annotation.PostConstruct; // fixed import
-import org.springframework.beans.factory.annotation.Autowired;
+import edu.vt.workout.model.User;
+import edu.vt.workout.repo.UserRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
-import java.util.List;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/users")
-@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080", "http://localhost:3000"})
+@RequestMapping("/api")
 public class UserController {
 
-    private final JdbcTemplate jdbc;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     @Autowired
-    public UserController(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
+    public UserController(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
-    @PostConstruct
-    public void init() {
-        jdbc.execute("""
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY,
-                username VARCHAR(50) UNIQUE NOT NULL,
-                password_hash VARCHAR(255) NOT NULL
-            )
-        """);
+    // Health check
+    @GetMapping("/health")
+    public Map<String, String> health() {
+        return Map.of("status", "ok");
     }
 
+    // Signup: expects JSON { "username":"...", "password":"..." }
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
 
-        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Username and password required"));
+        if (username == null || password == null || username.isBlank() || password.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "username and password required"));
         }
+
+        if (userRepository.findByUsername(username).isPresent()) {
+            return ResponseEntity.status(409).body(Map.of("success", false, "message", "username taken"));
+        }
+
+        String hash = passwordEncoder.encode(password);
+        User u = new User();
+        u.setUsername(username);
+        u.setPassword(hash);
 
         try {
-            List<Integer> exists = jdbc.queryForList(
-                "SELECT id FROM users WHERE username = ?",
-                new Object[]{username},
-                Integer.class
-            );
-            if (!exists.isEmpty()) {
-                return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
-            }
-
-            String hash = passwordEncoder.encode(password);
-            jdbc.update("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, hash);
-
-            Integer userId = jdbc.queryForObject(
-                "SELECT id FROM users WHERE username = ?",
-                new Object[]{username},
-                Integer.class
-            );
-
-            return ResponseEntity.status(201).body(Map.of("id", userId, "username", username));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Database error", "detail", e.getMessage()));
+            userRepository.save(u);
+        } catch (DataIntegrityViolationException ex) {
+            return ResponseEntity.status(500).body(Map.of("success", false, "message", "database error"));
         }
+
+        return ResponseEntity.ok(Map.of("success", true, "message", "user created"));
     }
 
+    // Login: expects JSON { "username":"...", "password":"..." }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
 
-        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Username and password required"));
+        if (username == null || password == null) {
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", "username and password required"));
         }
 
-        try {
-            List<Map<String, Object>> rows = jdbc.queryForList(
-                "SELECT id, username, password_hash FROM users WHERE username = ?",
-                new Object[]{username}
-            );
-
-            if (rows.isEmpty()) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
-            }
-
-            Map<String, Object> user = rows.get(0);
-            String storedHash = Objects.toString(user.get("password_hash"), "");
-
-            if (!passwordEncoder.matches(password, storedHash)) {
-                return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
-            }
-
-            return ResponseEntity.ok(Map.of(
-                "id", user.get("id"),
-                "username", user.get("username")
-            ));
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(Map.of("error", "Database error", "detail", e.getMessage()));
+        Optional<User> found = userRepository.findByUsername(username);
+        if (found.isEmpty()) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "invalid credentials"));
         }
+
+        User user = found.get();
+        boolean matches = passwordEncoder.matches(password, user.getPassword());
+        if (!matches) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "invalid credentials"));
+        }
+
+        // For now we return a simple success message. Replace with JWT/session as needed.
+        return ResponseEntity.ok(Map.of("success", true, "message", "login OK"));
     }
 }
