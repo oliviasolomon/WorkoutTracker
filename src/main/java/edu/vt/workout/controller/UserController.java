@@ -7,14 +7,19 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080"})
+@CrossOrigin(origins = "*")
 public class UserController {
 
+    private final JdbcTemplate jdbc;
+
     @Autowired
-    private JdbcTemplate jdbc;
+    public UserController(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
+    }
 
     // Signup
     @PostMapping("/signup")
@@ -29,13 +34,15 @@ public class UserController {
         try {
             // Check if username already exists
             List<Integer> exists = jdbc.queryForList(
-                "SELECT id FROM users WHERE username = ?", new Object[]{username}, Integer.class
+                "SELECT id FROM users WHERE username = ?",
+                new Object[]{username},
+                Integer.class
             );
             if (!exists.isEmpty()) {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
             }
 
-            // Insert user
+            // Insert user (NOTE: storing plaintext password; consider hashing for production)
             jdbc.update(
                 "INSERT INTO users (username, password) VALUES (?, ?)",
                 username, password
@@ -44,7 +51,8 @@ public class UserController {
             // Get the new user ID
             Integer userId = jdbc.queryForObject(
                 "SELECT id FROM users WHERE username = ?",
-                new Object[]{username}, Integer.class
+                new Object[]{username},
+                Integer.class
             );
 
             return ResponseEntity.status(201).body(Map.of("id", userId, "username", username));
@@ -66,10 +74,10 @@ public class UserController {
         try {
             List<Map<String,Object>> rows = jdbc.queryForList(
                 "SELECT id, username, password FROM users WHERE username = ?",
-                username
+                new Object[]{username}
             );
 
-            if (rows.isEmpty() || !rows.get(0).get("password").equals(password)) {
+            if (rows.isEmpty() || !Objects.equals(rows.get(0).get("password"), password)) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
             }
 
