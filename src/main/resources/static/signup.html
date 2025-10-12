@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Signup - Workout Tracker</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Sign Up</h1>
+  <form id="signup-form">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <button type="submit">Sign Up</button>
+  </form>
+  <p>Already have an account? <a href="login.html">Login here</a></p>
+
+  <script>
+    const form = document.getElementById('signup-form');
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      try {
+        const res = await fetch('https://workouttracker-d5wa.onrender.com/api/users/signup', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({username, password})
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          alert(data.error || 'Signup failed');
+          return;
+        }
+
+        // Save user_id in localStorage and go to tracker
+        localStorage.setItem('user_id', data.id);
+        localStorage.setItem('username', data.username);
+        window.location.href = 'tracker.html';
+      } catch (err) {
+        console.error(err);
+        alert('Signup failed');
+      }
+    });
+  </script>
+</body>
+</html>
