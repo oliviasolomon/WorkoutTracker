@@ -1,9 +1,21 @@
--- Users table for login/signup (store hashed password)
+-- MySQL schema (compatible with your Java code)
+CREATE DATABASE IF NOT EXISTS workout_tracker;
+USE workout_tracker;
+
+-- Users table (store hashed password)
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL
-);
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Exercises table (predefined exercises)
+CREATE TABLE IF NOT EXISTS exercises (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    muscle_group VARCHAR(100) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Workouts table (exercise_name column matches Java model/rowmapper)
 CREATE TABLE IF NOT EXISTS workouts (
@@ -15,15 +27,10 @@ CREATE TABLE IF NOT EXISTS workouts (
     weight DOUBLE,
     muscle_group VARCHAR(100),
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Predefined exercises
-CREATE TABLE IF NOT EXISTS exercises (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) UNIQUE NOT NULL,
-    muscle_group VARCHAR(100) NOT NULL
-);
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_user_date (user_id, date),
+    INDEX idx_exercise_name (exercise_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- Seed exercises (safe upsert for MySQL)
 INSERT INTO exercises (name, muscle_group) VALUES
