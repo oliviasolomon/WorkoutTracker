@@ -12,7 +12,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080"})
+@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080", "http://localhost:3000", "*"}) 
 public class UserController {
 
     private final JdbcTemplate jdbc;
@@ -23,7 +23,7 @@ public class UserController {
         this.jdbc = jdbc;
     }
 
-    // Signup: accepts { username, password } and stores hashed password
+    // Signup: expects JSON { "username": "...", "password": "..." }
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -34,7 +34,6 @@ public class UserController {
         }
 
         try {
-            // Check if username already exists
             List<Integer> exists = jdbc.queryForList(
                 "SELECT id FROM users WHERE username = ?",
                 new Object[]{username},
@@ -44,16 +43,13 @@ public class UserController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
             }
 
-            // Hash password and insert user
             String hash = passwordEncoder.encode(password);
-            jdbc.update(
-                "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-                username, hash
-            );
+            jdbc.update("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, hash);
 
             Integer userId = jdbc.queryForObject(
                 "SELECT id FROM users WHERE username = ?",
-                new Object[]{username}, Integer.class
+                new Object[]{username},
+                Integer.class
             );
 
             return ResponseEntity.status(201).body(Map.of("id", userId, "username", username));
@@ -62,7 +58,7 @@ public class UserController {
         }
     }
 
-    // Login: accepts { username, password } and verifies against stored hash
+    // Login: expects JSON { "username": "...", "password": "..." }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -73,7 +69,7 @@ public class UserController {
         }
 
         try {
-            List<Map<String,Object>> rows = jdbc.queryForList(
+            List<Map<String, Object>> rows = jdbc.queryForList(
                 "SELECT id, username, password_hash FROM users WHERE username = ?",
                 new Object[]{username}
             );
@@ -82,8 +78,9 @@ public class UserController {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
             }
 
-            Map<String,Object> user = rows.get(0);
-            String storedHash = (String) user.get("password_hash");
+            Map<String, Object> user = rows.get(0);
+            String storedHash = Objects.toString(user.get("password_hash"), "");
+
             if (!passwordEncoder.matches(password, storedHash)) {
                 return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
             }
