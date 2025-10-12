@@ -13,6 +13,7 @@ public class WorkoutRowMapper implements RowMapper<Workout> {
     Workout w = new Workout();
     w.setId(rs.getLong("id"));
     w.setUserId(rs.getInt("user_id"));
+    // column name used here must match the DB schema: exercise_name
     w.setExerciseName(rs.getString("exercise_name"));
     w.setMuscleGroup(rs.getString("muscle_group"));
     w.setSets(rs.getInt("sets"));
