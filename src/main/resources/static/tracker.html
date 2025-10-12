@@ -29,7 +29,7 @@
     // Get logged-in user ID from localStorage
     const userId = parseInt(localStorage.getItem('user_id'));
     if (!userId) {
-      alert('Log in first please!');
+      alert('Please log in first!');
       window.location.href = 'login.html';
     }
 
@@ -57,7 +57,7 @@
         workoutsList.innerHTML = '';
         workouts.forEach(w => {
           const li = document.createElement('li');
-          li.textContent = `${w.exercise} - ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` - ${w.weight} lbs` : '');
+          li.textContent = `${w.exerciseName} - ${w.sets} sets x ${w.reps} reps` + (w.weight ? ` - ${w.weight} lbs` : '');
           workoutsList.appendChild(li);
         });
       } catch (err) {
@@ -91,7 +91,7 @@
         
         // Immediately update the list without re-fetching
         const li = document.createElement('li');
-        li.textContent = `${workout.exercise} - ${workout.sets} sets x ${workout.reps} reps` + (workout.weight ? ` - ${workout.weight} lbs` : '');
+        li.textContent = `${saved.exerciseName} - ${saved.sets} sets x ${saved.reps} reps` + (saved.weight ? ` - ${saved.weight} lbs` : '');
         workoutsList.appendChild(li);
 
         // Store last workout in sessionStorage for confirmation page
