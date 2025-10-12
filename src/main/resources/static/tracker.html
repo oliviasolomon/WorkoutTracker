@@ -69,6 +69,7 @@
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const workout = {
+        user_id: userId,
         exercise: exerciseSelect.value,
         sets: parseInt(document.getElementById('sets').value),
         reps: parseInt(document.getElementById('reps').value),
@@ -76,7 +77,7 @@
       };
 
       try {
-        await fetch('https://workouttracker-d5wa.onrender.com/api/workouts', {
+        const res = await fetch('https://workouttracker-d5wa.onrender.com/api/workouts', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(workout)
@@ -93,6 +94,12 @@
         li.textContent = `${workout.exercise} - ${workout.sets} sets x ${workout.reps} reps` + (workout.weight ? ` - ${workout.weight} lbs` : '');
         workoutsList.appendChild(li);
 
+        // Store last workout in sessionStorage for confirmation page
+        sessionStorage.setItem('lastWorkout', JSON.stringify(saved));
+
+        // Redirect to confirmation page
+        window.location.href = 'confirmation.html';
+        
         form.reset();
       } catch (err) {
         console.error('Failed to add workout:', err);
