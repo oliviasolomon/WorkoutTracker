@@ -1,4 +1,4 @@
-package edu.vt.workout.repository;
+package edu.vt.workout.repo;
 
 import edu.vt.workout.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
