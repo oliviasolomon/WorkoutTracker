@@ -77,7 +77,7 @@
       };
 
       try {
-        const res = await fetch('https://workouttracker-d5wa.onrender.com/api/workouts', {
+        await fetch('https://workouttracker-d5wa.onrender.com/api/workouts', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(workout)
