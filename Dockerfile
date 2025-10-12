@@ -1,19 +1,25 @@
-# Use Maven + JDK in a single stage to build and run
-FROM maven:3.9-eclipse-temurin-17
+# Build stage
+FROM maven:3.8.8-openjdk-17 AS build
 
-# Set working directory
 WORKDIR /app
 
-# Copy pom.xml and source
+# Copy only what we need to leverage layer caching
 COPY pom.xml .
 COPY src ./src
 
-# Package the application
+# Build the app (skip tests for faster builds)
 RUN mvn -B -DskipTests package
 
-# Set environment variable for port
-ENV PORT=5000
+# Runtime stage
+FROM eclipse-temurin:17-jre-jammy
+
+WORKDIR /app
+
+# Copy the fat/boot jar produced by Spring Boot
+COPY --from=build /app/target/*.jar app.jar
+
+ENV JAVA_OPTS=""
+
 EXPOSE 5000
 
-# Run the JAR
-CMD ["sh", "-c", "java -jar target/*.jar"]
+ENTRYPOINT ["sh","-c","java $JAVA_OPTS -jar /app/app.jar"]
