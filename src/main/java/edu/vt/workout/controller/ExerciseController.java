@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/exercises")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080"})
 public class ExerciseController {
 
     private final JdbcTemplate jdbc;
@@ -20,7 +20,6 @@ public class ExerciseController {
 
     @GetMapping
     public List<String> listExercises() {
-        // assumes table "exercises" has a column "name"
         String sql = "SELECT name FROM exercises ORDER BY name ASC";
         return jdbc.queryForList(sql, String.class);
     }
