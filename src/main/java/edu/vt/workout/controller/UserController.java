@@ -12,7 +12,7 @@ import java.util.Objects;
 
 @RestController
 @RequestMapping("/api/users")
-@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080", "http://localhost:3000", "*"}) 
+@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080", "http://localhost:3000"})
 public class UserController {
 
     private final JdbcTemplate jdbc;
@@ -23,7 +23,6 @@ public class UserController {
         this.jdbc = jdbc;
     }
 
-    // Signup: expects JSON { "username": "...", "password": "..." }
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -58,7 +57,6 @@ public class UserController {
         }
     }
 
-    // Login: expects JSON { "username": "...", "password": "..." }
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
