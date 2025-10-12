@@ -1,13 +1,11 @@
 package edu.vt.workout.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -18,30 +16,40 @@ public class UserController {
     @Autowired
     private JdbcTemplate jdbc;
 
-    private final RowMapper<Map<String, Object>> mapper = (rs, rowNum) -> Map.of(
-            "id", rs.getLong("id"),
-            "username", rs.getString("username")
-    );
-
     // Signup
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
 
-        if (username == null || username.trim().isEmpty() || password == null || password.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("error","Invalid username/password"));
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username and password required"));
         }
 
-        // Hash password (simple SHA256, can replace with bcrypt if preferred)
-        String passwordHash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(password);
-
         try {
-            jdbc.update("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, passwordHash);
-            Map<String, Object> user = jdbc.queryForObject("SELECT id, username FROM users WHERE username = ?", new Object[]{username}, mapper);
-            return ResponseEntity.status(201).body(user);
+            // Check if username already exists
+            List<Integer> exists = jdbc.queryForList(
+                "SELECT id FROM users WHERE username = ?", new Object[]{username}, Integer.class
+            );
+            if (!exists.isEmpty()) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
+            }
+
+            // Insert user
+            jdbc.update(
+                "INSERT INTO users (username, password) VALUES (?, ?)",
+                username, password
+            );
+
+            // Get the new user ID
+            Integer userId = jdbc.queryForObject(
+                "SELECT id FROM users WHERE username = ?",
+                new Object[]{username}, Integer.class
+            );
+
+            return ResponseEntity.status(201).body(Map.of("id", userId, "username", username));
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error","Username already exists"));
+            return ResponseEntity.status(500).body(Map.of("error", "Database error", "detail", e.getMessage()));
         }
     }
 
@@ -50,21 +58,28 @@ public class UserController {
     public ResponseEntity<?> login(@RequestBody Map<String, String> body) {
         String username = body.get("username");
         String password = body.get("password");
-        if (username == null || password == null) {
-            return ResponseEntity.badRequest().body(Map.of("error","Missing username/password"));
+
+        if (username == null || username.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Username and password required"));
         }
 
-        String passwordHash = org.apache.commons.codec.digest.DigestUtils.sha256Hex(password);
-
         try {
-            Map<String, Object> user = jdbc.queryForObject(
-                    "SELECT id, username FROM users WHERE username = ? AND password_hash = ?",
-                    new Object[]{username, passwordHash},
-                    mapper
+            List<Map<String,Object>> rows = jdbc.queryForList(
+                "SELECT id, username, password FROM users WHERE username = ?",
+                username
             );
-            return ResponseEntity.ok(user);
+
+            if (rows.isEmpty() || !rows.get(0).get("password").equals(password)) {
+                return ResponseEntity.status(401).body(Map.of("error", "Invalid username or password"));
+            }
+
+            Map<String,Object> user = rows.get(0);
+            return ResponseEntity.ok(Map.of(
+                "id", user.get("id"),
+                "username", user.get("username")
+            ));
         } catch (Exception e) {
-            return ResponseEntity.status(401).body(Map.of("error","Invalid credentials"));
+            return ResponseEntity.status(500).body(Map.of("error", "Database error", "detail", e.getMessage()));
         }
     }
 }
