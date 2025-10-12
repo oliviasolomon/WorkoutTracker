@@ -11,8 +11,11 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @Column(nullable = false)
-    private String password; // store hashed password
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
     // getters & setters
     public Long getId() { return id; }
@@ -21,6 +24,6 @@ public class User {
     public String getUsername() { return username; }
     public void setUsername(String username) { this.username = username; }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getPassword() { return passwordHash; }
+    public void setPassword(String passwordHash) { this.passwordHash = passwordHash; }
 }
