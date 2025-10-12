@@ -23,6 +23,18 @@ public class UserController {
         this.jdbc = jdbc;
     }
 
+    // Optional: ensure table exists on startup
+    @PostConstruct
+    public void init() {
+        jdbc.execute("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                username VARCHAR(50) UNIQUE NOT NULL,
+                password_hash VARCHAR(255) NOT NULL
+            )
+        """);
+    }
+
     @PostMapping("/signup")
     public ResponseEntity<?> signup(@RequestBody Map<String, String> body) {
         String username = body.get("username");
@@ -33,6 +45,7 @@ public class UserController {
         }
 
         try {
+            // Check if username exists
             List<Integer> exists = jdbc.queryForList(
                 "SELECT id FROM users WHERE username = ?",
                 new Object[]{username},
@@ -42,9 +55,11 @@ public class UserController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
             }
 
+            // Insert user
             String hash = passwordEncoder.encode(password);
             jdbc.update("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, hash);
 
+            // Fetch new user ID
             Integer userId = jdbc.queryForObject(
                 "SELECT id FROM users WHERE username = ?",
                 new Object[]{username},
