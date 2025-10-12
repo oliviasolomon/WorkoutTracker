@@ -21,25 +21,31 @@
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
+      if (!username || !password) {
+        alert('Username and password are required');
+        return;
+      }
+
       try {
-        const res = await fetch('https://workouttracker-d5wa.onrender.com/api/users/signup', {
+        const res = await fetch('/api/users/signup', {
           method: 'POST',
           headers: {'Content-Type':'application/json'},
           body: JSON.stringify({username, password})
         });
-        const data = await res.json();
+
         if (!res.ok) {
-          alert(data.error || 'Signup failed');
+          const errData = await res.json().catch(() => ({}));
+          alert(errData.error || 'Signup failed');
           return;
         }
 
-        // Save user_id in localStorage and go to tracker
+        const data = await res.json();
         localStorage.setItem('user_id', data.id);
         localStorage.setItem('username', data.username);
         window.location.href = 'tracker.html';
       } catch (err) {
         console.error(err);
-        alert('Signup failed');
+        alert('Network or server error during signup');
       }
     });
   </script>
