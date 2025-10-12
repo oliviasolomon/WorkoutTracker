@@ -26,6 +26,13 @@
     const form = document.getElementById('workout-form');
     const exerciseSelect = document.getElementById('exercise');
 
+    // Get logged-in user ID from localStorage
+    const userId = parseInt(localStorage.getItem('user_id'));
+    if (!userId) {
+      alert('Log in first please!');
+      window.location.href = 'login.html';
+    }
+
     // Populate dropdown from backend
     async function loadExercises() {
       try {
@@ -45,7 +52,7 @@
     // Fetch existing workouts
     async function fetchWorkouts() {
       try {
-        const res = await fetch('/api/workouts');
+        const res = await fetch(`https://workouttracker-d5wa.onrender.com/api/workouts?user_id=${userId}`);
         const workouts = await res.json();
         workoutsList.innerHTML = '';
         workouts.forEach(w => {
@@ -69,12 +76,18 @@
       };
 
       try {
-        await fetch('/api/workouts', {
+        await fetch('https://workouttracker-d5wa.onrender.com/api/workouts', {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
           body: JSON.stringify(workout)
         });
 
+        const saved = await res.json();
+        if (!res.ok) {
+          alert(saved.error || 'Failed to save workout');
+          return;
+        }
+        
         // Immediately update the list without re-fetching
         const li = document.createElement('li');
         li.textContent = `${workout.exercise} - ${workout.sets} sets x ${workout.reps} reps` + (workout.weight ? ` - ${workout.weight} lbs` : '');
