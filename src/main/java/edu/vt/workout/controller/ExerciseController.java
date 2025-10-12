@@ -8,7 +8,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/exercises")
-@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080"})
+@CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com", "http://localhost:8080", "http://localhost:3000"})
 public class ExerciseController {
 
     private final JdbcTemplate jdbc;
