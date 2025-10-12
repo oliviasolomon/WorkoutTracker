@@ -1,5 +1,6 @@
 package edu.vt.workout.controller;
 
+import jakarta.annotation.PostConstruct; // fixed import
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -23,7 +24,6 @@ public class UserController {
         this.jdbc = jdbc;
     }
 
-    // Optional: ensure table exists on startup
     @PostConstruct
     public void init() {
         jdbc.execute("""
@@ -45,7 +45,6 @@ public class UserController {
         }
 
         try {
-            // Check if username exists
             List<Integer> exists = jdbc.queryForList(
                 "SELECT id FROM users WHERE username = ?",
                 new Object[]{username},
@@ -55,11 +54,9 @@ public class UserController {
                 return ResponseEntity.badRequest().body(Map.of("error", "Username already taken"));
             }
 
-            // Insert user
             String hash = passwordEncoder.encode(password);
             jdbc.update("INSERT INTO users (username, password_hash) VALUES (?, ?)", username, hash);
 
-            // Fetch new user ID
             Integer userId = jdbc.queryForObject(
                 "SELECT id FROM users WHERE username = ?",
                 new Object[]{username},
