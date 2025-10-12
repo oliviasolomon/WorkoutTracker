@@ -1,51 +1,44 @@
 package edu.vt.workout.controller;
 
-import edu.vt.workout.model.User;
-import edu.vt.workout.repository.UserRepository;
+import edu.vt.workout.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+// Serve static index.html from src/main/resources/static/index.html
 @Controller
 public class HomeController {
 
-    private final UserRepository userRepository;
-
-    public HomeController(UserRepository userRepository) {
-        this.userRepository = userRepository;
-    }
-
     @GetMapping("/")
     public String index() {
-        return "index"; // returns index.html from templates
+        return "index.html";
     }
 
-    @PostMapping("/signup")
-    public String signup(@RequestParam String username,
-                         @RequestParam String password,
-                         Model model) {
-        if (userRepository.findByUsername(username) != null) {
-            model.addAttribute("error", "Username already exists!");
-            return "index";
-        }
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(password);
-        userRepository.save(user);
-        model.addAttribute("message", "Sign up successful! Please log in.");
-        return "index";
-    }
+    // Simple REST endpoints for signup/login; front-end can POST JSON to these
+    @RestController
+    @RequestMapping("/api/auth")
+    public static class AuthController {
+        private final UserService userService;
 
-    @PostMapping("/login")
-    public String login(@RequestParam String username,
-                        @RequestParam String password,
-                        Model model) {
-        User user = userRepository.findByUsername(username);
-        if (user != null && user.getPassword().equals(password)) {
-            model.addAttribute("message", "Login successful!");
-        } else {
-            model.addAttribute("error", "Invalid credentials");
+        @Autowired
+        public AuthController(UserService userService) {
+            this.userService = userService;
         }
-        return "index";
+
+        record AuthRequest(String username, String password) {}
+
+        @PostMapping("/signup")
+        public ResponseEntity<String> signup(@RequestBody AuthRequest req) {
+            userService.register(req.username(), req.password());
+            return ResponseEntity.ok("ok");
+        }
+
+        @PostMapping("/login")
+        public ResponseEntity<String> login(@RequestBody AuthRequest req) {
+            boolean ok = userService.authenticate(req.username(), req.password());
+            if (ok) return ResponseEntity.ok("ok");
+            return ResponseEntity.status(401).body("invalid");
+        }
     }
 }
