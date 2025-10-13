@@ -3,97 +3,147 @@
 <head>
   <meta charset="UTF-8" />
   <title>Signup - Workout Tracker</title>
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Create an account</h1>
+  <h1>Sign Up</h1>
   <form id="signup-form" autocomplete="off">
-    <input id="username" name="username" type="text" placeholder="Username" required minlength="3" />
-    <input id="password" name="password" type="password" placeholder="Password" required minlength="6" />
-    <button id="signup-btn" type="submit">Sign up and go to Tracker</button>
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Sign Up</button>
   </form>
 
-  <p>Already have an account? <a href="login.html">Log in</a></p>
-  <div id="msg" class="error" role="status" aria-live="polite"></div>
+  <p>Already have an account? <a href="login.html">Login here</a></p>
+
+  <div id="msg" role="status" aria-live="polite" style="color: red; margin-top:10px;"></div>
 
   <script>
-    (function(){
-      const form = document.getElementById('signup-form');
-      const msg = document.getElementById('msg');
-      const base = '/api/auth'; // change this if your backend base path differs
+    const API_BASE = ''; // keep empty for same origin, or set to 'https://workouttracker-d5wa.onrender.com'
+    const SIGNUP_API = API_BASE + '/api/auth/signup';
+    const LOGIN_API  = API_BASE + '/api/auth/login';
 
-      function showError(text) {
-        msg.textContent = text || '';
+    const form = document.getElementById('signup-form');
+    const msg = document.getElementById('msg');
+
+    function showMsg(text, color='red') {
+      msg.style.color = color;
+      msg.textContent = text;
+    }
+
+    async function attemptLoginAfterSignup(username, password) {
+      // Call login to try and get id/structured response if signup returns only text
+      try {
+        const res = await fetch(LOGIN_API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ username, password })
+        });
+
+        const contentType = res.headers.get('Content-Type') || '';
+        let body = null;
+        if (contentType.includes('application/json')) {
+          body = await res.json();
+        } else {
+          body = await res.text();
+        }
+
+        if (!res.ok) {
+          // login failed for some reason after signup — show message
+          showMsg(typeof body === 'string' ? body : (body?.error || 'Login failed after signup'));
+          return false;
+        }
+
+        // store known info
+        if (body && typeof body === 'object') {
+          if (body.id) localStorage.setItem('user_id', String(body.id));
+          if (body.username) localStorage.setItem('username', body.username);
+        } else {
+          // backend returned a simple "ok" string or similar — we at least store username locally
+          localStorage.setItem('username', username);
+        }
+
+        return true;
+      } catch (err) {
+        console.warn('Auto-login failed:', err);
+        // still store username locally so tracker can work in local-mode
+        localStorage.setItem('username', username);
+        return true;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        showMsg('Username and password required.');
+        return;
       }
 
-      async function parseJsonSafe(res) {
-        try { return await res.json(); } catch(e) { return null; }
-      }
+      try {
+        const res = await fetch(SIGNUP_API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ username, password })
+        });
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        showError('');
+        const ct = res.headers.get('Content-Type') || '';
+        let body;
+        if (ct.includes('application/json')) {
+          body = await res.json();
+        } else {
+          body = await res.text();
+        }
 
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value;
-
-        if (!username || !password) {
-          showError('Enter a username and password.');
+        // handle duplicate username cases gracefully:
+        if (res.status === 409) {
+          showMsg('Username already in use.');
           return;
         }
 
-        // Basic client-side checks
-        if (username.length < 3) { showError('Username must be at least 3 characters'); return; }
-        if (password.length < 6) { showError('Password must be at least 6 characters'); return; }
-
-        // Disable while request in flight
-        const btn = document.getElementById('signup-btn');
-        btn.disabled = true;
-        btn.textContent = 'Signing up...';
-
-        try {
-          const res = await fetch(base + '/signup', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password }),
-            credentials: 'same-origin'
-          });
-
-          const data = await parseJsonSafe(res);
-
-          if (res.status === 201 || res.ok) {
-            // success: server should return {id, username}
-            const id = data?.id ?? data?.userId ?? null;
-
-            // store for tracker usage
-            if (id) localStorage.setItem('user_id', id);
-            localStorage.setItem('username', data?.username ?? username);
-
-            // go to tracker
-            window.location.href = 'tracker.html';
-            return;
+        // Many backends may throw 500 when duplicate; map that to a helpful message
+        if (res.status === 500) {
+          // If response contains a helpful message, show it; otherwise show generic duplicate message
+          const serverMsg = typeof body === 'string' ? body : (body?.error || body?.message);
+          if (serverMsg && /user|username|duplicate|already/i.test(String(serverMsg))) {
+            showMsg('Username already in use.');
+          } else {
+            showMsg(serverMsg || 'Server error during signup. Try again.');
           }
-
-          if (res.status === 409) {
-            // user already exists -> redirect to login so they can sign in
-            alert('That username already exists. Please log in.');
-            window.location.href = 'login.html';
-            return;
-          }
-
-          // other errors
-          const remoteMessage = data?.error || data?.message || null;
-          showError(remoteMessage || `Signup failed (status ${res.status})`);
-        } catch (err) {
-          console.error('Signup error', err);
-          showError('Network error during signup. Try again.');
-        } finally {
-          btn.disabled = false;
-          btn.textContent = 'Sign up and go to Tracker';
+          return;
         }
-      });
-    })();
+
+        if (!res.ok) {
+          // other client/server errors
+          showMsg(typeof body === 'string' ? body : (body?.error || 'Signup failed'));
+          return;
+        }
+
+        // success path
+        if (body && typeof body === 'object' && body.id) {
+          // server returned JSON with id/username — store and redirect
+          localStorage.setItem('user_id', String(body.id));
+          localStorage.setItem('username', body.username || username);
+          window.location.href = 'tracker.html';
+          return;
+        }
+
+        // if server returned a success text (e.g. "registered" or "ok") but no id,
+        // attempt to login automatically to fetch a user id or at least ensure credentials work.
+        const autoLoginOk = await attemptLoginAfterSignup(username, password);
+        if (autoLoginOk) {
+          window.location.href = 'tracker.html';
+        } else {
+          showMsg('Signup succeeded but auto-login failed — please login manually.');
+        }
+
+      } catch (err) {
+        console.error(err);
+        showMsg('Network error while signing up.');
+      }
+    });
   </script>
 </body>
 </html>
