@@ -15,11 +15,8 @@
   <p>Already have an account? <a href="login.html">Login here</a></p>
 
   <script>
-    const form = document.getElementById('signup-form');
-
-    form.addEventListener('submit', async (e) => {
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const username = document.getElementById('username').value.trim();
       const password = document.getElementById('password').value;
 
@@ -31,16 +28,18 @@
         });
 
         if (!res.ok) {
-          const errorText = await res.text();
-          alert(errorText || 'Signup failed');
+          const errText = await res.text();
+          alert('Signup failed: ' + errText);
           return;
         }
 
-        // Redirect to tracker.html after successful signup
+        // Save to localStorage and go directly to tracker
+        localStorage.setItem('username', username);
+        localStorage.setItem('password', password);
         window.location.href = 'tracker.html';
       } catch (err) {
         console.error(err);
-        alert('Signup failed');
+        alert('Signup failed. Check console.');
       }
     });
   </script>
