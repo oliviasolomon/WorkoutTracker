@@ -41,6 +41,11 @@
     const EXERCISES_API = API_BASE + '/api/exercises';
     const WORKOUTS_API = API_BASE + '/api/workouts';
 
+    // Fallback exercise list (used if backend /api/exercises fails)
+    const DEFAULT_EXERCISES = [
+      'Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Pull Ups', 'Barbell Row', 'Leg Press'
+    ];
+
     async function loadExercises() {
       try {
         const res = await fetch(EXERCISES_API);
