@@ -1,53 +1,113 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Login - Workout Tracker</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 24px; max-width: 520px; margin: auto; }
+    input, button { display:block; width:100%; margin:8px 0; padding:10px; font-size:16px; }
+    .error { color:#c00; margin-top:8px; }
+  </style>
 </head>
 <body>
-  <h1>Login</h1>
-  <form id="login-form">
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <button type="submit">Login</button>
+  <h1>Log in</h1>
+  <form id="login-form" autocomplete="off">
+    <input id="username" name="username" type="text" placeholder="Username" required />
+    <input id="password" name="password" type="password" placeholder="Password" required />
+    <button id="login-btn" type="submit">Login and go to Tracker</button>
   </form>
-  <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+
+  <p>Don't have an account? <a href="signup.html">Sign up</a></p>
+  <div id="msg" class="error" role="status" aria-live="polite"></div>
 
   <script>
-    const form = document.getElementById('login-form');
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const username = document.getElementById('username').value.trim();
-      const password = document.getElementById('password').value;
+    (function(){
+      const form = document.getElementById('login-form');
+      const msg = document.getElementById('msg');
+      const base = '/api/auth'; // change if needed
 
-      if (!username || !password) {
-        alert('Username and password are required');
-        return;
+      function showError(text) {
+        msg.textContent = text || '';
       }
 
-      try {
-        const res = await fetch('/api/users/login', {
-          method: 'POST',
-          headers: {'Content-Type':'application/json'},
-          body: JSON.stringify({username, password})
-        });
+      async function parseJsonSafe(res) {
+        try { return await res.json(); } catch(e) { return null; }
+      }
 
-        if (!res.ok) {
-          const errData = await res.json().catch(() => ({}));
-          alert(errData.error || 'Login failed');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showError('');
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+          showError('Enter username and password.');
           return;
         }
 
-        const data = await res.json();
-        localStorage.setItem('user_id', data.id);
-        localStorage.setItem('username', data.username);
-        window.location.href = 'tracker.html';
-      } catch (err) {
-        console.error(err);
-        alert('Network or server error during login');
-      }
-    });
+        const btn = document.getElementById('login-btn');
+        btn.disabled = true;
+        btn.textContent = 'Logging in...';
+
+        try {
+          const res = await fetch(base + '/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+            credentials: 'same-origin'
+          });
+
+          const data = await parseJsonSafe(res);
+
+          if (res.status === 200 && data) {
+            // store returned id/username
+            if (data.id) localStorage.setItem('user_id', data.id);
+            localStorage.setItem('username', data.username ?? username);
+
+            // go to tracker
+            window.location.href = 'tracker.html';
+            return;
+          }
+
+          // handle specific statuses
+          if (res.status === 401) {
+            showError('Invalid password. Please try again.');
+            return;
+          }
+          if (res.status === 404) {
+            // user not found — help the user sign up
+            if (confirm('User not found. Would you like to create an account with this username?')) {
+              window.location.href = 'signup.html';
+            } else {
+              showError('User not found.');
+            }
+            return;
+          }
+
+          // fallback message
+          const remoteMessage = data?.error || data?.message || null;
+          showError(remoteMessage || `Login failed (status ${res.status})`);
+        } catch (err) {
+          console.error('Login error', err);
+          showError('Network error during login. Try again.');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = 'Login and go to Tracker';
+        }
+      });
+
+      // If user_id is already stored, optionally let them go straight to tracker
+      (function checkAlreadyLoggedIn(){
+        const id = localStorage.getItem('user_id');
+        if (id) {
+          // silent redirect if you prefer — comment out the next line to prevent automatic redirect
+          // window.location.href = 'tracker.html';
+        }
+      })();
+    })();
   </script>
 </body>
 </html>
