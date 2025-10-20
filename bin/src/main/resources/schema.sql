@@ -1,0 +1,26 @@
+-- Users table
+CREATE TABLE IF NOT EXISTS users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL
+);
+
+-- Workouts table
+CREATE TABLE IF NOT EXISTS workouts (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Exercises table
+CREATE TABLE IF NOT EXISTS exercises (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    workout_id BIGINT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    sets INT NOT NULL,
+    reps INT NOT NULL,
+    weight DECIMAL(6,2),
+    FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
+);
