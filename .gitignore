@@ -1,6 +1,15 @@
+<<<<<<< HEAD
 target/
 data/
 *.log
 *.iml
 .idea/
 .DS_Store
+=======
+~*
+._*
+.TemporaryItems
+.DS_Store
+Thumbs.db
+>>>>>>> branch 'master' of https://web-cat.cs.vt.edu/Web-CAT/WebObjects/Web-CAT.woa/git/StudentProject/410d5a59-2103-4cc0-9a15-72e2ac1c9f13
+/bin/

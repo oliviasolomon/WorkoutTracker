@@ -1,38 +1,29 @@
 package edu.vt.workout.model;
 
+import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
+@Entity
+@Table(name = "users")
 public class Workout {
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  private Integer userId;
+  @Column(unique = true, nullable = false)
   private String exerciseName;
+  @Column(nullable = false)
   private String muscleGroup;
-  private Integer sets;
-  private Integer reps;
-  private Double weight;
-  private LocalDateTime date;
+  @Column(nullable = false)
+  private String[] units;
 
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
-
-  public Integer getUserId() { return userId; }
-  public void setUserId(Integer userId) { this.userId = userId; }
 
   public String getExerciseName() { return exerciseName; }
   public void setExerciseName(String exerciseName) { this.exerciseName = exerciseName; }
 
   public String getMuscleGroup() { return muscleGroup; }
   public void setMuscleGroup(String muscleGroup) { this.muscleGroup = muscleGroup; }
-
-  public Integer getSets() { return sets; }
-  public void setSets(Integer sets) { this.sets = sets; }
-
-  public Integer getReps() { return reps; }
-  public void setReps(Integer reps) { this.reps = reps; }
-
-  public Double getWeight() { return weight; }
-  public void setWeight(Double weight) { this.weight = weight; }
-
-  public LocalDateTime getDate() { return date; }
-  public void setDate(LocalDateTime date) { this.date = date; }
+  
+  public String[] getUnits() { return units; }
+  public void setUnits(String[] units) { this.units = units; }
 }
