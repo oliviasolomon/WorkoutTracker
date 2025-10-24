@@ -7,7 +7,8 @@
 </head>
 <body>
   <h1>Workout Tracker</h1>
-
+  <button id="logoutBtn" class="logout-btn">Sign Out</button>
+  
   <form id="workout-form">
     <select id="exercise" required>
       <option value="">Select Exercise</option>
@@ -200,6 +201,18 @@
     // Initialize UI
     loadExercises();
     fetchWorkouts();
+
+    // --- Logout logic ---
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      // Clear all stored login/session data
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      sessionStorage.clear();
+
+      // Redirect to login page
+      window.location.href = 'login.html';
+    });
+
   </script>
 </body>
 </html>
