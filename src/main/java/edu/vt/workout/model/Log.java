@@ -32,8 +32,8 @@ public class Log
     private Double weight; // Weight at which workout was completed
     @Column(name = "date", nullable = false)
     private LocalDateTime date; // Date at which workout was completed
-    @Transcient
-    priviate Workout workout; //populated only when joining
+    @Transient
+    private Workout workout; //populated only when joining
     // ~ Getters & Setters .....................................................
     // ID
     public Long getId() { return id; }
