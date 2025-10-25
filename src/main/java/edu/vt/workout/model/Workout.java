@@ -8,9 +8,11 @@ import java.time.LocalDateTime;
 public class Workout {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
-  @Column(unique = true, nullable = false)
+  @Column(name = "user_id", nullable = false)
+  private long userId;
+  @Column(name = "exercise_name", unique = true, nullable = false)
   private String exerciseName;
-  @Column(nullable = false)
+  @Column(name = "muscle_group", nullable = false)
   private String muscleGroup;
   @Column(nullable = false)
   private String[] units;
@@ -18,6 +20,9 @@ public class Workout {
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 
+  public long getUserId() {return userId; }
+  public void setUserId(long userId) { this.userId = userId; }
+  
   public String getExerciseName() { return exerciseName; }
   public void setExerciseName(String exerciseName) { this.exerciseName = exerciseName; }
 
