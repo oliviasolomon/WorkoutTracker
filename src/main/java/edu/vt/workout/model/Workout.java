@@ -6,8 +6,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "workouts")
 public class Workout {
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long id;
   @Column(name = "user_id", nullable = false)
   private Long userId;
@@ -17,20 +16,24 @@ public class Workout {
   private String muscleGroup;
   @Column(name = "date")
   private LocalDateTime date;
-  @Column(nullable = false)
-  private String[] units;
+  @Column(name = "units")
+  private String units;
 
+  //getter setters
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 
   public Long getUserId() {return userId; }
-  public void setUserId(long userId) { this.userId = userId; }
+  public void setUserId(Long userId) { this.userId = userId; }
   
   public String getExerciseName() { return exerciseName; }
   public void setExerciseName(String exerciseName) { this.exerciseName = exerciseName; }
 
   public String getMuscleGroup() { return muscleGroup; }
   public void setMuscleGroup(String muscleGroup) { this.muscleGroup = muscleGroup; }
+
+  public LocalDateTime getDate() { return date; }
+  public void setDate(LocalDateTime date) { this.date = date; }
   
   public String[] getUnits() { return units; }
   public void setUnits(String[] units) { this.units = units; }
