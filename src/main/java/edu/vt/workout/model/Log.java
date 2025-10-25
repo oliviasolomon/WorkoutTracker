@@ -55,4 +55,7 @@ public class Log
     // Date
     public LocalDateTime getDate() { return date; }
     public void setDate(LocalDateTime date) { this.date = date; }
+
+    public Workout getWorkout() { return workout; }
+    public void setWorkout(Workout workout) { this.workout = workout; }
 }
