@@ -9,17 +9,15 @@ import java.sql.SQLException;
 public class WorkoutRowMapper implements RowMapper<Workout> {
   @Override
   public Workout mapRow(ResultSet rs, int rowNum) throws SQLException {
-    // I'd like to check if the workout has already been created in the 
-    // repository, but idk how
     Workout w = new Workout();
     w.setId(rs.getLong("id"));
-    w.setUserId(rs.getLong("user_id"));
-    // column name used here must match the DB schema: exercise_name
+    w.setUserId(rs.getObject("user_id", Long.class));
     w.setExerciseName(rs.getString("exercise_name"));
     w.setMuscleGroup(rs.getString("muscle_group"));
     w.setSets(rs.getInt("sets"));
-    w.serReps(rs.getInt("reps"));
-    w.setweight(rs.getDouble("weight"));
+    w.setReps(rs.getInt("reps"));
+     //nullable field
+    w.setWeight(rs.getObject("weight", Double.class));
     if (rs.getTimestamp("date") != null) w.setDate(rs.getTimestamp("date").toLocalDateTime());
     return w;
   }
