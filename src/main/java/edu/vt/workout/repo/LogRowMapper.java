@@ -16,7 +16,7 @@ public class LogRowMapper implements RowMapper<Log> {
     l.setUserId(rs.getLong("l_user_id"));
     l.setSets(rs.getInt("sets");
     l.setReps(rs.getInt("reps"));
-    l.setWeight(rs.getDouble("weight"));
+    l.setWeight(rs.getObject("weight", Double.class));
     if (rs.getTimestamp("l_date") != null) l.setDate(rs.getTimestamp("l_date").toLocalDateTime());
 
     // nested workout from join aliases
