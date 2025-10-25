@@ -13,18 +13,15 @@ public class LogRowMapper implements RowMapper<Log> {
     l.setId(rs.getLong("l_id"));
     l.setWorkoutId(rs.getLong("l_workout_id"));
     l.setUserId(rs.getLong("l_user_id"));
-    Integer sets = rs.getInt("sets");
-    Integer reps = rs.getInt("reps");
-    Double weight = rs.getDouble("weight");
-    l.setSets(sets);
-    l.setReps(reps);
-    l.setWeight(weight);
+    l.setSets(rs.getInt("sets"));
+    l.setReps(rs.getInt("reps"));
+    l.setWeight(rs.getDouble("weight"));
     if (rs.getTimestamp("l_date") != null) l.setDate(rs.getTimestamp("l_date").toLocalDateTime());
 
     //nested workout
     Workout w = new Workout()
       w.setId(rs.getLong("w_id"));
-    Long wUser = rs.getObject("w_user_id", Long.class);
+    Long wUser = rs.getLong("w_user_id");
     w.setUserId(wUser);
     w.setExerciseName(rs.getString("w_exercise_name"));
     w.setMuscleGroup(rs.getString("w_muscle_group"));
