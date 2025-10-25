@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
  * @version Oct 20, 2025
  */
 @Entity
-@Table(name = "users")
+@Table(name = "logs")
 public class Log
 {
     // ~ Fields ................................................................
@@ -32,7 +32,8 @@ public class Log
     private Double weight; // Weight at which workout was completed
     @Column(name = "date", nullable = false)
     private LocalDateTime date; // Date at which workout was completed
-
+    @Transcient
+    priviate Workout workout; //populated only when joining
     // ~ Getters & Setters .....................................................
     // ID
     public long getId() { return id; }
