@@ -10,16 +10,26 @@ public class LogRowMapper implements RowMapper<Log> {
   @Override
   public Log mapRow(ResultSet rs, int rowNum) throws SQLException {
     Log l = new Log();
-    l.setId(rs.getLong("id"));
-    l.setWorkoutId(rs.getLong("workout_id"));
-    l.setUserId(rs.getLong("user_id"));
+    l.setId(rs.getLong("l_id"));
+    l.setWorkoutId(rs.getLong("l_workout_id"));
+    l.setUserId(rs.getLong("l_user_id"));
     Integer sets = rs.getInt("sets");
     Integer reps = rs.getInt("reps");
     Double weight = rs.getDouble("weight");
     l.setSets(sets);
     l.setReps(reps);
     l.setWeight(weight);
-    if (rs.getTimestamp("date") != null) l.setDate(rs.getTimestamp("date").toLocalDateTime());
+    if (rs.getTimestamp("l_date") != null) l.setDate(rs.getTimestamp("l_date").toLocalDateTime());
+
+    //nested workout
+    Workout w = new Workout()
+      w.setId(rs.getLong("w_id"));
+    Long wUser = rs.getObject("w_user_id", Long.class);
+    w.setUserId(wUser);
+    w.setExerciseName(rs.getString("w_exercise_name"));
+    w.setMuscleGroup(rs.getString("w_muscle_group"));
+    l.setWorkout(w);
+
     return l;
   }
 }
