@@ -10,7 +10,11 @@ CREATE TABLE IF NOT EXISTS workouts (
     id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT NOT NULL,
     name VARCHAR(100) NOT NULL,
+    muscle_group VARCHAR(100),
     date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    sets INT,
+    reps INT,
+    weight DECIMAL (6,2),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
@@ -30,8 +34,8 @@ CREATE TABLE IF NOT EXISTS logs (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   workout_id BIGINT NOT NULL,
   user_id BIGINT NOT NULL,
-  sets INT,
-  reps INT,
+  sets INT NOT NULL,
+  reps INT NOT NULL,
   weight DECIMAL(6,2),
   date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
