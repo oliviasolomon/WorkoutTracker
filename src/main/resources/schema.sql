@@ -24,3 +24,16 @@ CREATE TABLE IF NOT EXISTS exercises (
     weight DECIMAL(6,2),
     FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE
 );
+
+-- Logs table
+CREATE TABLE IF NOT EXISTS logs (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  workout_id BIGINT NOT NULL,
+  user_id BIGINT NOT NULL,
+  sets INT,
+  reps INT,
+  weight DECIMAL(6,2),
+  date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
