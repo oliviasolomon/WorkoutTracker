@@ -7,9 +7,9 @@ import java.time.LocalDateTime;
 @Table(name = "users")
 public class Workout {
   @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private Long id;
+  private long id;
   @Column(name = "user_id", nullable = false)
-  private long userId;
+  private Long userId;
   @Column(name = "exercise_name", unique = true, nullable = false)
   private String exerciseName;
   @Column(name = "muscle_group", nullable = false)
@@ -20,7 +20,7 @@ public class Workout {
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 
-  public long getUserId() {return userId; }
+  public Long getUserId() {return userId; }
   public void setUserId(long userId) { this.userId = userId; }
   
   public String getExerciseName() { return exerciseName; }
