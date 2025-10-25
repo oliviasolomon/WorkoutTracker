@@ -20,17 +20,17 @@ public class Log
     // ~ Fields ................................................................
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id; // Primary ID of the log
-    @Column(nullable = false)
+    @Column(name = "workout_id", nullable = false)
     private long workoutID; // ID of the workout specified in this Log
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private long userID; // ID of the user whom recorded the workout
-    @Column(nullable = false)
+    @Column(name = "sets", nullable = false)
     private Integer sets; // Number of sets completed
-    @Column(nullable = false)
+    @Column(name = "reps", nullable = false)
     private Integer reps; // Number of reps completed
-    @Column(nullable = false)
+    @Column(name = "weight")
     private Double weight; // Weight at which workout was completed
-    @Column(nullable = false)
+    @Column(name = "date", nullable = false)
     private LocalDateTime date; // Date at which workout was completed
 
     // ~ Getters & Setters .....................................................
