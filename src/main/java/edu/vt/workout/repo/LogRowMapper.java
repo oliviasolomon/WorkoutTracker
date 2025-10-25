@@ -11,19 +11,17 @@ public class LogRowMapper implements RowMapper<Log> {
   @Override
   public Log mapRow(ResultSet rs, int rowNum) throws SQLException {
     Log l = new Log();
-    l.setId(rs.getLong("l_id"));
-    l.setWorkoutId(rs.getLong("l_workout_id"));
-    l.setUserId(rs.getLong("l_user_id"));
-    l.setSets(rs.getInt("sets");
-    l.setReps(rs.getInt("reps"));
+    l.setId(rs.getObject("l_id", Long.class));
+    l.setWorkoutId(rs.getObject("l_workout_id", Long.class));
+    l.setUserId(rs.getObject("l_user_id", Long.class));
+    l.setSets(rs.getObject("sets", Integer.class));
+    l.setReps(rs.getObject("reps", Integer.class));
     l.setWeight(rs.getObject("weight", Double.class));
     if (rs.getTimestamp("l_date") != null) l.setDate(rs.getTimestamp("l_date").toLocalDateTime());
 
-    // nested workout from join aliases
     Workout w = new Workout();
-    w.setId(rs.getLong("w_id"));
-    Long wUser = rs.getObject("w_user_id", Long.class);
-    w.setUserId(wUser);
+    w.setId(rs.getObject("w_id", Long.class));
+    w.setUserId(rs.getObject("w_user_id", Long.class));
     w.setExerciseName(rs.getString("w_exercise_name"));
     w.setMuscleGroup(rs.getString("w_muscle_group"));
     l.setWorkout(w);
