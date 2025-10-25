@@ -4,16 +4,19 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "workouts")
 public class Workout {
-  @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-  private long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
   @Column(name = "user_id", nullable = false)
   private Long userId;
   @Column(name = "exercise_name", unique = true, nullable = false)
   private String exerciseName;
   @Column(name = "muscle_group", nullable = false)
   private String muscleGroup;
+  @Column(name = "date")
+  private LocalDateTime date;
   @Column(nullable = false)
   private String[] units;
 
