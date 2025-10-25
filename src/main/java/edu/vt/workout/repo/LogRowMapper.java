@@ -1,6 +1,7 @@
 package edu.vt.workout.repo;
 
 import edu.vt.workout.model.Log;
+import edu.vt.workout.model.Workout;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
@@ -13,15 +14,15 @@ public class LogRowMapper implements RowMapper<Log> {
     l.setId(rs.getLong("l_id"));
     l.setWorkoutId(rs.getLong("l_workout_id"));
     l.setUserId(rs.getLong("l_user_id"));
-    l.setSets(rs.getInt("sets"));
+    l.setSets(rs.getInt("sets");
     l.setReps(rs.getInt("reps"));
     l.setWeight(rs.getDouble("weight"));
     if (rs.getTimestamp("l_date") != null) l.setDate(rs.getTimestamp("l_date").toLocalDateTime());
 
-    //nested workout
-    Workout w = new Workout()
-      w.setId(rs.getLong("w_id"));
-    Long wUser = rs.getLong("w_user_id");
+    // nested workout from join aliases
+    Workout w = new Workout();
+    w.setId(rs.getLong("w_id"));
+    Long wUser = rs.getObject("w_user_id", Long.class);
     w.setUserId(wUser);
     w.setExerciseName(rs.getString("w_exercise_name"));
     w.setMuscleGroup(rs.getString("w_muscle_group"));
