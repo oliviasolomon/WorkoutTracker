@@ -10,9 +10,9 @@ public class Workout {
   private Long id;
   @Column(name = "user_id", nullable = false)
   private Long userId;
-  @Column(name = "exercise_name", unique = true, nullable = false)
+  @Column(name = "exercise_name", nullable = false)
   private String exerciseName;
-  @Column(name = "muscle_group", nullable = false)
+  @Column(name = "muscle_group")
   private String muscleGroup;
   @Column(name = "date")
   private LocalDateTime date;
@@ -23,7 +23,7 @@ public class Workout {
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
 
-  public Long getUserId() {return userId; }
+  public Long getUserId() { return userId; }
   public void setUserId(Long userId) { this.userId = userId; }
   
   public String getExerciseName() { return exerciseName; }
@@ -34,7 +34,16 @@ public class Workout {
 
   public LocalDateTime getDate() { return date; }
   public void setDate(LocalDateTime date) { this.date = date; }
+
+  public Integer getSets() { return sets; }
+  public void setSets(Integer sets) { this.sets = sets; }
+
+  public Integer getReps() { return reps; }
+  public void setReps(Integer reps) { this.reps = reps; }
+
+  public Double getWeight() { return weight; }
+  public void setWeight(Double weight) { this.weight = weight; }
   
-  public String[] getUnits() { return units; }
-  public void setUnits(String[] units) { this.units = units; }
+  public String getUnits() { return units; }
+  public void setUnits(String units) { this.units = units; }
 }
