@@ -20,7 +20,7 @@ public class ExerciseController {
 
     @GetMapping // handles getters
     public List<String> listExercises() {
-        // sql query to fetch all exercise names from exercises table in schema in alphabetical order
+        // sql query to fetch all exercise names from exercises table in alphabetical order
         String sql = "SELECT name FROM exercises ORDER BY name ASC";
         // executes query and returns a list of exercise names as strings
         return jdbc.queryForList(sql, String.class);
