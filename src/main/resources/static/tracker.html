@@ -20,6 +20,23 @@
   </form>
 
   <h2>Your Workouts</h2>
+  <div class="controls">
+  <label for="sortBy">Sort by:</label>
+  <select id="sortBy">
+    <option value="">Default (Original Order)</option>
+    <option value="exercise">Exercise Name (A–Z)</option>
+    <option value="sets">Sets (High → Low)</option>
+    <option value="reps">Reps (High → Low)</option>
+    <option value="weight">Weight (High → Low)</option>
+    <option value="date">Date (Newest → Oldest)</option>
+  </select>
+
+  <label for="filterExercise">Filter by exercise:</label>
+  <select id="filterExercise">
+    <option value="">All</option>
+  </select>
+  </div>
+
   <ul id="workouts-list"></ul>
 
   <script>
@@ -47,6 +64,35 @@
       'Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Pull Ups', 'Barbell Row', 'Leg Press'
     ];
 
+    let allWorkouts = [];
+
+    function sortWorkouts(workouts, sortBy) {
+      const sorted = [...workouts];
+      switch (sortBy) {
+        case 'exercise':
+          sorted.sort((a, b) => (a.exerciseName || a.exercise || '').localeCompare(b.exerciseName || b.exercise || ''));
+          break;
+        case 'sets':
+          sorted.sort((a, b) => b.sets - a.sets);
+          break;
+        case 'reps':
+          sorted.sort((a, b) => b.reps - a.reps);
+          break;
+        case 'weight':
+          sorted.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+          break;
+          case 'date':
+          sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          break;
+      }
+      return sorted;
+    }
+
+    function filterWorkouts(workouts, exerciseFilter) {
+      if (!exerciseFilter) return workouts;
+      return workouts.filter(w => (w.exerciseName || w.exercise) === exerciseFilter);
+    }
+    
     async function loadExercises() {
       try {
         const res = await fetch(EXERCISES_API);
@@ -72,11 +118,12 @@
     // Fetch workouts either from backend (if userId is present) or from localStorage if not
     async function fetchWorkouts() {
       workoutsList.innerHTML = '';
+      let workouts = [];
       if (userId) {
         try {
           const res = await fetch(`${WORKOUTS_API}?user_id=${encodeURIComponent(userId)}`);
           if (!res.ok) throw new Error('backend fetch failed');
-          const workouts = await res.json();
+          workouts = await res.json();
           renderWorkouts(workouts);
           return;
         } catch (err) {
@@ -88,7 +135,9 @@
       // Local mode keyed by username
       const localKey = `wt_${username}`;
       const stored = localStorage.getItem(localKey);
-      const workouts = stored ? JSON.parse(stored) : [];
+      workouts = stored ? JSON.parse(stored) : [];
+
+      allWorkouts = workouts;
       renderWorkouts(workouts);
     }
 
@@ -198,9 +247,28 @@
       workoutsList.appendChild(li);
     }
 
+    const sortSelect = document.getElementById('sortBy');
+    const filterSelect = document.getElementById('filterExercise');
+
+    sortSelect.addEventListener('change', updateDisplayedWorkouts);
+    filterSelect.addEventListener('change', updateDisplayedWorkouts);
+
+    function updateDisplayedWorkouts() {
+      const sortBy = sortSelect.value;
+      const exerciseFilter = filterSelect.value;
+      const filtered = filterWorkouts(allWorkouts, exerciseFilter);
+      const sorted = sortBy ? sortWorkouts(filtered, sortBy) : filtered;
+      renderWorkouts(sorted);
+    }
+    
+    
     // Initialize UI
     loadExercises();
     fetchWorkouts();
+
+    // Reset dropdowns each time the page loads
+    sortSelect.value = '';
+    filterSelect.value = '';
 
     // --- Logout logic ---
     document.getElementById('logoutBtn').addEventListener('click', () => {
