@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.*;
 //--
 // this controller handles user authentication and registration requests.
 // it exposes rest api endpoints under "/api/auth" for signup and login to create accounts and verify credentials.
-// the controller communicates with the "user service" class to handle database operations and credential validation.
+// the controller communicates with the "userserivce" class to handle database operations and credential validation.
 // the endpoints return json/text responses for frontend integration for authentication success or failure.
 //--
 
