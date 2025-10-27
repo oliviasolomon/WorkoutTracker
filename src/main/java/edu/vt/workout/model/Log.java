@@ -21,9 +21,9 @@ public class Log
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id; // Primary ID of the log
     @Column(name = "workout_id", nullable = false)
-    private Long workoutID; // ID of the workout specified in this Log
+    private Long workoutId; // ID of the workout specified in this Log
     @Column(name = "user_id", nullable = false)
-    private Long userID; // ID of the user whom recorded the workout
+    private Long userId; // ID of the user whom recorded the workout
     @Column(name = "sets", nullable = false)
     private Integer sets; // Number of sets completed
     @Column(name = "reps", nullable = false)
@@ -39,11 +39,11 @@ public class Log
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     // WorkoutID
-    public Long getWorkoutId() { return workoutID; }
-    public void setWorkoutId(Long workoutID) { this.workoutID = workoutID; }
+    public Long getWorkoutId() { return workoutId; }
+    public void setWorkoutId(Long workoutId) { this.workoutId = workoutId; }
     // UserID
-    public Long getUserId() { return userID; }
-    public void setUserId(Long userID) { this.userID = userID; }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     // Sets
     public Integer getSets() { return sets; }
     public void setSets(Integer sets) { this.sets = sets; }
