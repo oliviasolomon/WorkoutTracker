@@ -6,6 +6,13 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+//--
+// this controller provides rest api endpoints for retrieving exercise data.
+// it uses spring's jdbctemplate to directly query the database.
+//
+// the "api/exercises" endpoint allows the frontend to fetch a list of all exercises stored in the exercises table for dropdowns/sorted lists.
+//--
+
 @RestController
 @RequestMapping("/api/exercises")
 @CrossOrigin(origins = {"https://workouttracker-d5wa.onrender.com"})
