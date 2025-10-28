@@ -73,7 +73,7 @@ public class Graph
      *            Variable stored in "Log" class
      * @return RegularTimePeriod that's at the same instant as time
      */
-    private RegularTimePeriod timeToPeriod(LocalDateTime time)
+    public RegularTimePeriod timeToPeriod(LocalDateTime time)
     {
         // locale assumed since LocalDateTime doesn't store it
         Locale locale = Locale.US;
