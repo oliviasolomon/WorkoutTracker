@@ -29,9 +29,6 @@ public class GraphTest
         int hr;
         int min;
         int sec;
-        int sets;
-        int reps;
-        double weight;
         Log log;
         Log[] out = new Log[numLogs];
         
