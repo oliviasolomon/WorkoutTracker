@@ -61,8 +61,16 @@
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
     </dependency>
+    
+    <!-- Graphing -->
+    <dependency>
+      <groupId>org.jfree</groupId>
+      <artifactId>jfreechart</artifactId>
+      <version>1.5.6</version>
+	</dependency>
+    
   </dependencies>
-
+  
   <build>
     <plugins>
       <plugin>
