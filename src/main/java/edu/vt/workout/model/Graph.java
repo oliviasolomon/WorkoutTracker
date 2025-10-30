@@ -48,9 +48,9 @@ public class Graph
         for (int i = 0; i < logbook.length; i++)
         {
             log = logbook[i];
-            sets.add(timeToPeriod(log.getDate()), log.getSets());
-            reps.add(timeToPeriod(log.getDate()), log.getReps());
-            weight.add(timeToPeriod(log.getDate()), log.getWeight());
+            sets.add(timeToDay(log.getDate()), log.getSets());
+            reps.add(timeToDay(log.getDate()), log.getReps());
+            weight.add(timeToDay(log.getDate()), log.getWeight());
         }
 
         // Add series to collection
@@ -73,17 +73,20 @@ public class Graph
      *            Variable stored in "Log" class
      * @return RegularTimePeriod that's at the same instant as time
      */
-    public RegularTimePeriod timeToPeriod(LocalDateTime time)
+    public Day timeToDay(LocalDateTime time)
     {
+        // Strip vars from time
+        int yr = time.getYear();
+        int mo = time.getMonthValue();
+        int da = time.getDayOfMonth();
+        
         // locale assumed since LocalDateTime doesn't store it
         Locale locale = Locale.US;
         Calendar cal = Calendar.getInstance(zone, locale);
+        cal.set(yr, mo, da);
 
-        return RegularTimePeriod.createInstance(
-            RegularTimePeriod.class,
-            cal.getTime(),
-            zone,
-            locale);
+        Day day = new Day(cal.getTime());
+        return day;
     }
 
 }

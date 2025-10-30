@@ -8,6 +8,7 @@ public class GraphTest
 {
     public static void main(String[] args)
     {
+        
         Graph graph = new Graph(TimeZone.getDefault());
         
         int numLogs = 10;
