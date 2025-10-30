@@ -2,16 +2,24 @@ package edu.vt.workout.model;
 
 import jakarta.persistence.*;
 
+//--
+// this model represents a registered user in the system with
+// a unique user and password & is mapped to the "users" table
+// in the database.
+//
+// used by: userrepository, authcontroller, usercontroller
+//--
+
 @Entity
 @Table(name = "users")
 public class User {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) //auto increment primary keu
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false) // must be unique & not nullable
     private String username;
 
-    @Column(nullable = false)
+    @Column(nullable = false) // required field
     private String password;
 
     // getters & setters
