@@ -14,24 +14,47 @@ import java.time.LocalDateTime;
 import java.util.*;
 import javax.swing.*;
 
+// -------------------------------------------------------------------------
+/**
+ * Tool class for converting an array of logs to a plot with sets, reps, and
+ * weight plotted all together
+ * 
+ * @author jbrent22
+ * @version Oct 29, 2025
+ */
 public class Graph
 {
     private TimeZone zone;
 
+    /**
+     * Sole constructor for the graph class, sets the time zone the logbook is
+     * stored in
+     * 
+     * @param zone
+     *            Time zone in which the user resides
+     */
     public Graph(TimeZone zone)
     {
         this.zone = zone;
     }
 
 
-    public void graphMaker(Log[] logbook)
+    /**
+     * Plots the data stored within the logs of the logbook across time on
+     * separate axes; one for sets and reps (low range), and the other for
+     * weight the work out was completed in
+     * 
+     * @param logbook
+     *            Set of logs that needs to be plotted
+     */
+    public void logGraphMaker(Log[] logbook)
     {
         TimeSeriesCollection setRepCol = makeLogDataset(logbook);
         TimeSeriesCollection weightCol = new TimeSeriesCollection(zone);
         weightCol.addSeries(setRepCol.getSeries(2));
         setRepCol.removeSeries(2);
 
-        // Create chart using renderer (obtained from stackOverflow)
+        // Create chart (obtained from stackOverflow)
         // Link:
         // https://stackoverflow.com/questions/29494440/setting-different-y-axis-for-two-series-with-jfreechart
         XYPlot chart = new XYPlot();
@@ -47,7 +70,7 @@ public class Graph
         chart.setRenderer(0, render0);
         chart.setRenderer(1, render1);
 
-        // Set Axes & map data
+        // Set Axes & map data to said axes
         chart.setRangeAxis(0, new NumberAxis("Sets / Reps [Unitless]"));
         chart.setRangeAxis(1, new NumberAxis("Weight [lbs]"));
         chart.setDomainAxis(new DateAxis("Date of Completion"));
@@ -94,7 +117,6 @@ public class Graph
     // private void makeBMIDataset() { }
 
 
-    // ----------------------------------------------------------
     /**
      * Adapter method that converts from LocalDateTime class to
      * RegularTImePeriod class

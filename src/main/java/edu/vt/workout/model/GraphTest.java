@@ -4,22 +4,36 @@ import java.util.Random;
 import java.util.TimeZone;
 import java.time.LocalDateTime;
 
+// -------------------------------------------------------------------------
+/**
+ * Feaux-test class for the graph class. Generates and shows a graph based on
+ * randomly input log data.
+ * 
+ * @author jbrent22
+ * @version Oct 29, 2025
+ */
 public class GraphTest
 {
+    /**
+     * Method to run the graph class and generate a logbook of random data.
+     * 
+     * @param args
+     *      Changes nothing in this implementation
+     */
     public static void main(String[] args)
     {
-        
+
         Graph graph = new Graph(TimeZone.getDefault());
-        
+
         int numLogs = 100;
         Log[] logbook = logbookGenerator(numLogs);
-        
-        graph.graphMaker(logbook);
-        
+
+        graph.logGraphMaker(logbook);
+
         System.out.println("Done!");
     }
-    
-    
+
+
     private static Log[] logbookGenerator(int numLogs)
     {
         Random rand = new Random();
@@ -32,7 +46,7 @@ public class GraphTest
         int sec;
         Log log;
         Log[] out = new Log[numLogs];
-        
+
         for (int i = 0; i < numLogs; i++)
         {
             yr = rand.nextInt(20) + 2000;
