@@ -11,7 +11,7 @@ public class GraphTest
         
         Graph graph = new Graph(TimeZone.getDefault());
         
-        int numLogs = 10;
+        int numLogs = 100;
         Log[] logbook = logbookGenerator(numLogs);
         
         graph.graphMaker(logbook);
@@ -44,8 +44,8 @@ public class GraphTest
             date = LocalDateTime.of(yr, mo, da, hr, min, sec);
             log = new Log();
             log.setDate(date);
-            log.setSets(rand.nextInt(6) + 6);
-            log.setReps(rand.nextInt(2) + 2);
+            log.setSets(rand.nextInt(7) + 6);
+            log.setReps(rand.nextInt(3) + 2);
             log.setWeight(rand.nextDouble(150) + 50);
             out[i] = log;
         }

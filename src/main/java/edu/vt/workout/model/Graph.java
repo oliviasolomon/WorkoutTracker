@@ -1,10 +1,15 @@
 package edu.vt.workout.model;
 
-import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.DefaultXYItemRenderer;
 import org.jfree.data.time.*;
 import org.jfree.chart.ChartPanel;
+import java.awt.Color;
+import java.awt.Font;
 import java.time.LocalDateTime;
 import java.util.*;
 import javax.swing.*;
@@ -21,13 +26,38 @@ public class Graph
 
     public void graphMaker(Log[] logbook)
     {
-        TimeSeriesCollection collection = makeLogDataset(logbook);
-        JFreeChart setsReps = ChartFactory.createTimeSeriesChart(
-            "Sets and Reps",
-            "Date",
-            "Number",
-            collection);
-        ChartPanel panel = new ChartPanel(setsReps);
+        TimeSeriesCollection setRepCol = makeLogDataset(logbook);
+        TimeSeriesCollection weightCol = new TimeSeriesCollection(zone);
+        weightCol.addSeries(setRepCol.getSeries(2));
+        setRepCol.removeSeries(2);
+
+        // Create chart using renderer (obtained from stackOverflow)
+        // Link:
+        // https://stackoverflow.com/questions/29494440/setting-different-y-axis-for-two-series-with-jfreechart
+        XYPlot chart = new XYPlot();
+        chart.setDataset(0, setRepCol);
+        chart.setDataset(1, weightCol);
+
+        // Get & set renderer
+        DefaultXYItemRenderer render0 = new DefaultXYItemRenderer();
+        DefaultXYItemRenderer render1 = new DefaultXYItemRenderer();
+        render0.setSeriesFillPaint(0, Color.BLUE);
+        render0.setSeriesFillPaint(1, Color.RED);
+        render1.setSeriesFillPaint(0, Color.BLACK);
+        chart.setRenderer(0, render0);
+        chart.setRenderer(1, render1);
+
+        // Set Axes & map data
+        chart.setRangeAxis(0, new NumberAxis("Sets / Reps [Unitless]"));
+        chart.setRangeAxis(1, new NumberAxis("Weight [lbs]"));
+        chart.setDomainAxis(new DateAxis("Date of Completion"));
+        chart.mapDatasetToRangeAxis(0, 0);
+        chart.mapDatasetToRangeAxis(1, 1);
+
+        // Finalization
+        JFreeChart graph =
+            new JFreeChart("Plot", JFreeChart.DEFAULT_TITLE_FONT, chart, true);
+        ChartPanel panel = new ChartPanel(graph);
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.getContentPane().add(panel);
@@ -48,9 +78,9 @@ public class Graph
         for (int i = 0; i < logbook.length; i++)
         {
             log = logbook[i];
-            sets.add(timeToDay(log.getDate()), log.getSets());
-            reps.add(timeToDay(log.getDate()), log.getReps());
-            weight.add(timeToDay(log.getDate()), log.getWeight());
+            sets.addOrUpdate(timeToDay(log.getDate()), log.getSets());
+            reps.addOrUpdate(timeToDay(log.getDate()), log.getReps());
+            weight.addOrUpdate(timeToDay(log.getDate()), log.getWeight());
         }
 
         // Add series to collection
@@ -79,7 +109,7 @@ public class Graph
         int yr = time.getYear();
         int mo = time.getMonthValue();
         int da = time.getDayOfMonth();
-        
+
         // locale assumed since LocalDateTime doesn't store it
         Locale locale = Locale.US;
         Calendar cal = Calendar.getInstance(zone, locale);

@@ -14,14 +14,20 @@ import javax.swing.*;
 
 // -------------------------------------------------------------------------
 /**
- *  Working example for plotting simple bar graph
+ * Working example for plotting simple bar graph
  * 
- *  @author jbrent22
- *  @version Oct 28, 2025
+ * @author jbrent22
+ * @version Oct 28, 2025
  */
 public class Graph_Example
 {
     // ~Public Methods ........................................................
+    /**
+     * Main method that shows an example of how to create a bar graph using
+     * jfree chart
+     * 
+     * @param args
+     */
     public static void main(String[] args)
     {
         // Create & Fill dataset with dummy values
@@ -34,7 +40,7 @@ public class Graph_Example
         JFreeChart bar = ChartFactory
             .createBarChart("Example", "Category", "Value", dataset);
         ChartPanel display = new ChartPanel(bar);
-        
+
         // Creates display window and puts all the components together
         JFrame frame = new JFrame();
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
