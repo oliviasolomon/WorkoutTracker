@@ -1,5 +1,8 @@
 package edu.vt.workout.model;
 
+import org.jfree.chart.ChartUtils;
+import java.awt.image.BufferedImage;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
@@ -140,5 +143,44 @@ public class Graph
         Day day = new Day(cal.getTime());
         return day;
     }
+
+    /**
+     * This method turns the JFrame into a BufferedImage. Intended for web or API use,
+     * where the chart needs to be rendered as an image instead of shown in a window.
+     * 
+     * @param logbook
+     *            An array of Log objects containing workout session data.
+     *            Each log provides the date, sets, reps, and weight for a workout entry.
+     * @return 
+     *            A BufferedImage object containing the rendered chart.
+     */
+    public BufferedImage createChartImage(Log[] logbook) {
+        TimeSeriesCollection setRepCol = makeLogDataset(logbook);
+        TimeSeriesCollection weightCol = new TimeSeriesCollection(zone);
+        weightCol.addSeries(setRepCol.getSeries(2));
+        setRepCol.removeSeries(2);
+
+        XYPlot chart = new XYPlot();
+        chart.setDataset(0, setRepCol);
+        chart.setDataset(1, weightCol);
+
+        DefaultXYItemRenderer render0 = new DefaultXYItemRenderer();
+        DefaultXYItemRenderer render1 = new DefaultXYItemRenderer();
+        chart.setRenderer(0, render0);
+        chart.setRenderer(1, render1);
+
+        chart.setRangeAxis(0, new NumberAxis("Sets / Reps"));
+        chart.setRangeAxis(1, new NumberAxis("Weight (lbs)"));
+        chart.setDomainAxis(new DateAxis("Date"));
+        chart.mapDatasetToRangeAxis(0, 0);
+        chart.mapDatasetToRangeAxis(1, 1);
+
+        JFreeChart graph = new JFreeChart("Workout Metrics", JFreeChart.DEFAULT_TITLE_FONT, chart, true);
+
+        // Convert chart to image (no frame)
+        BufferedImage image = graph.createBufferedImage(800, 600);
+        return image;
+    }
+
 
 }
