@@ -46,7 +46,7 @@ public class MetricsController {
             l.setDate(LocalDateTime.now().minusDays(rand.nextInt(30)));
             l.setSets(rand.nextInt(5) + 3);
             l.setReps(rand.nextInt(10) + 5);
-            l.setWeight((double)(rand.nextInt(100) + 100); //double expected for weight
+            l.setWeight(Double.valueOf(rand.nextInt(100) + 100)); //double expected for weight 
             logs[i] = l;
         }
         return logs;
