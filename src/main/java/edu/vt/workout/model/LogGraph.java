@@ -25,7 +25,7 @@ import javax.swing.*;
  * @author jbrent22
  * @version Oct 29, 2025
  */
-public class Graph
+public class LogGraph
 {
     private TimeZone zone;
 
@@ -36,7 +36,7 @@ public class Graph
      * @param zone
      *            Time zone in which the user resides
      */
-    public Graph(TimeZone zone)
+    public LogGraph(TimeZone zone)
     {
         this.zone = zone;
     }

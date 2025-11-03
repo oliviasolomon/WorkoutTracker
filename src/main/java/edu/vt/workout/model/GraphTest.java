@@ -23,7 +23,7 @@ public class GraphTest
     public static void main(String[] args)
     {
 
-        Graph graph = new Graph(TimeZone.getDefault());
+        LogGraph graph = new LogGraph(TimeZone.getDefault());
 
         int numLogs = 100;
         Log[] logbook = logbookGenerator(numLogs);
