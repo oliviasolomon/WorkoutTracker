@@ -65,7 +65,7 @@ public class WorkoutController {
             final Integer sets = body.get("sets") == null ? 0 : ((Number)body.get("sets")).intValue();
             final Integer reps = body.get("reps") == null ? 0 : ((Number)body.get("reps")).intValue();
             final Double weight = body.get("weight") == null ? null : ((Number)body.get("weight")).doubleValue();
-
+            final Boolean favorite = body.get("favorite") == null ? Boolean.FALSE : (Boolean) body.get("favorite");
             // validation: exercise field must be filled, sets, reps, and weight must be positive
             if (exercise.isEmpty() || sets < 0 || reps < 0 || weight < 0) {
                 return ResponseEntity.badRequest().body(Map.of("error","invalid input"));
@@ -83,7 +83,7 @@ public class WorkoutController {
             final String muscle = muscleTemp; // make effectively final for lambda below
 
             //insert workout and capture generated key
-            final String sql = "INSERT INTO workouts (user_id, exercise_name, sets, reps, weight, muscle_group) VALUES (?, ?, ?, ?, ?, ?)";
+            final String sql = "INSERT INTO workouts (user_id, exercise_name, sets, reps, weight, muscle_group, favorite) VALUES (?, ?, ?, ?, ?, ?,?)";
             KeyHolder kh = new GeneratedKeyHolder();
             jdbc.update(connection -> {
                 PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -91,8 +91,9 @@ public class WorkoutController {
                 ps.setString(2, exercise);   // exercise name
                 ps.setInt(3, sets);          // default sets
                 ps.setInt(4, reps);          // default reps
-                if (weight == null) ps.setNull(5, java.sql.Types.DOUBLE); else ps.setDouble(5, weight);
-                if (muscle == null) ps.setNull(6, java.sql.Types.VARCHAR); else ps.setString(6, muscle);
+                if (weight == null) ps.setNull(5, java.sql.Types.DOUBLE); else ps.setDouble(5, weight); //weight
+                if (muscle == null) ps.setNull(6, java.sql.Types.VARCHAR); else ps.setString(6, muscle); //muscle group
+                ps.setBoolean(7, favorite); //favorite flag
                 return ps;
             }, kh);
 
