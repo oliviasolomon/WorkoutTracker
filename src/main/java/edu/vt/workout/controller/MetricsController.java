@@ -1,6 +1,6 @@
 package edu.vt.workout.controller;
 
-import edu.vt.workout.model.Graph;
+import edu.vt.workout.model.LogGraph;
 import edu.vt.workout.model.Log;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
