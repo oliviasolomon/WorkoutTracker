@@ -41,6 +41,9 @@ public class Workout {
   @Column(name = "units") // units (lbs/kg)
   private String units;
 
+  @Column(name = "favorite", nullable = false)
+  private Boolean favorite = Boolean.FALSE; 
+  
   //getters and setters
   public Long getId() { return id; }
   public void setId(Long id) { this.id = id; }
@@ -68,4 +71,7 @@ public class Workout {
 
   public String getUnits() { return units; }
   public void setUnits(String units) { this.units = units; }
+
+  public Boolean getFavorite() { return favorite; }
+  public void setFavorite(Boolean favorite) { this.favorite = favorite; }
 }
