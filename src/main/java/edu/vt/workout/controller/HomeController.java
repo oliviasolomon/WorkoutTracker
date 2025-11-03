@@ -35,7 +35,8 @@ public class HomeController {
     @GetMapping("/login")
     public String loginPage() {
         return "login.html";
-
+    }
+    
     //maps "/metrics" to the metrics page
     @GetMapping("/metrics")
     public String metricsPage() {
