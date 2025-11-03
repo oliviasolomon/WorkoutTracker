@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS workouts (
     sets INT NOT NULL, -- number of sets
     reps INT NOT NULL, -- number of reps
     weight DECIMAL (6,2), -- weight used
+    favorite BOOLEAN DEFAULT FALSE, --marks workout as favorited
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE -- deletes workout upon account deletion
 );
 
