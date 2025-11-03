@@ -24,7 +24,7 @@ public class MetricsController {
             Log[] logbook = generateSampleLogs(50);
 
             // Use Graph to create a chart image in memory
-            Graph graph = new Graph(TimeZone.getDefault());
+            LogGraph graph = new LogGraph(TimeZone.getDefault());
             BufferedImage chartImage = graph.createChartImage(logbook); // new helper method below
 
             // Convert BufferedImage -> byte[]
