@@ -34,7 +34,13 @@ public class WorkoutRowMapper implements RowMapper<Workout> {
     w.setWeight(rs.getObject("weight", Double.class));  // nullable
     w.setUnits(rs.getString("units"));
     // convert sql timestamp to localdatetime
-    if (rs.getTimestamp("date") != null) w.setDate(rs.getTimestamp("date").toLocalDateTime());
+    if (rs.getTimestamp("date") != null)
+      w.setDate(rs.getTimestamp("date").toLocalDateTime());
+    //map favorite column
+    Object fav = rs.getObject("favorite");
+    if (fav != null) w.setFavorite(rs.getBoolean("favorite"));
+    else w.setFavorite(false);
+    
     return w; //return workout object
   }
 }
