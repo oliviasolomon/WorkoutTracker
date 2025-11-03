@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 // -------------------------------------------------------------------------
 /**
- * Storage class for user metrics such as age, height, weight, gender, neck, and
+ * Storage class for user metrics such as age, height, weight, sex, neck, and
  * waist
  * 
  * @author jbrent22
@@ -24,12 +24,14 @@ public class Metric
     private Double height;
     @Column(name = "weight")
     private Double weight; // Current body weight
-    @Column(name = "gender")
-    private String gender;
+    @Column(name = "sex")
+    private String sex;
     @Column(name = "neck")
     private Double neck;
     @Column(name = "waist")
     private Double waist;
+    @Column(name = "hips")
+    private Double hips;
     @Column(name = "date", nullable = false)
     private LocalDateTime date; // Date at which workout was completed
 
@@ -43,8 +45,8 @@ public class Metric
      *            height of the user
      * @param weight
      *            weight of the user
-     * @param gender
-     *            gender of the user
+     * @param sex
+     *            sex of the user
      * @param neck
      *            neck circumference of the user
      * @param waist
@@ -54,14 +56,14 @@ public class Metric
         Integer age,
         Double height,
         Double weight,
-        String gender,
+        String sex,
         Double neck,
         Double waist)
     {
         this.age = age;
         this.height = height;
         this.weight = weight;
-        this.gender = gender;
+        this.sex = sex;
         this.neck = neck;
         this.waist = waist;
         date = LocalDateTime.now();
@@ -134,16 +136,16 @@ public class Metric
     }
 
 
-    // Gender
-    public String getGender()
+    // sex
+    public String getsex()
     {
-        return gender;
+        return sex;
     }
 
 
-    public void setGender(String gender)
+    public void setsex(String sex)
     {
-        this.gender = gender;
+        this.sex = sex;
     }
 
 
@@ -170,6 +172,18 @@ public class Metric
     public void setWaist(Double waist)
     {
         this.waist = waist;
+    }
+    
+    // [Female Only] Hip Size
+    public Double getHips()
+    {
+        return hips;
+    }
+
+
+    public void setHips(Double hips)
+    {
+        this.hips = hips;
     }
 
 
