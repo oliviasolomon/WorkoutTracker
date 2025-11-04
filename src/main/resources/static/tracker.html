@@ -27,7 +27,7 @@
 <body>
   <h1>Workout Tracker</h1>
   <button id="logoutBtn" class="logout-btn">Sign Out</button>
-  
+
   <form id="workout-form">
     <select id="exercise" required>
       <option value="">Select Exercise</option>
@@ -173,23 +173,28 @@
         workoutsList.appendChild(li);
       });
 
+      // Add click listeners for favorite buttons
       document.querySelectorAll('.fav-btn').forEach(btn => {
-      btn.addEventListener('click', async (e) => {
-        const id = e.target.getAttribute('data-id');
+        btn.addEventListener('click', async (e) => {
+          const id = e.target.getAttribute('data-id');
 
-        // call backend to toggle favorite
-        try {
-          await fetch(`/workouts/${id}/favorite`, { method: 'POST' });
-        } catch (err) {
-          console.warn('Failed to update favorite on backend:', err);
-        }
+          try {
+            await fetch(`/workouts/${id}/favorite`, { method: 'POST' });
+          } catch (err) {
+            console.warn('Failed to update favorite on backend:', err);
+          }
 
-        // Instantly toggle icon
-        e.target.textContent = e.target.textContent === '⭐' ? '☆' : '⭐';
+          // Instantly toggle icon and re-sort
+          e.target.textContent = e.target.textContent === '⭐' ? '☆' : '⭐';
+          const w = allWorkouts.find(w => w.id == id);
+          if (w) w.favorite = !w.favorite;
+          allWorkouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
+          renderWorkouts(allWorkouts);
+        });
       });
-    });
+    }
 
-    // Add new workout (POST to backend if userId exists; otherwise save locally)
+    // Add new workout
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -205,15 +210,14 @@
       }
 
       const payload = {
-        user_id: userId, // may be null
-        username: username, // helpful if backend can accept username
+        user_id: userId,
+        username: username,
         exercise: exercise,
         sets: sets,
         reps: reps,
         weight: weight
       };
 
-      // If we have a userId, try backend first
       if (userId) {
         try {
           const res = await fetch(WORKOUTS_API, {
@@ -222,7 +226,6 @@
             body: JSON.stringify(payload)
           });
 
-          // Read body even if not ok, to show server error message
           const saved = await (res.headers.get('Content-Type')?.includes('application/json') ? res.json() : res.text());
 
           if (!res.ok) {
@@ -231,27 +234,21 @@
             return;
           }
 
-          // If server responds with the saved workout, use it; else use local payload
           const savedWorkout = saved && typeof saved === 'object' ? saved : {
             exerciseName: exercise,
             sets, reps, weight
           };
 
-          // update UI
           appendWorkoutToList(savedWorkout);
-
-          // store lastWorkout and redirect
           sessionStorage.setItem('lastWorkout', JSON.stringify(savedWorkout));
           form.reset();
           window.location.href = 'confirmation.html';
           return;
         } catch (err) {
           console.warn('POST to backend failed, falling back to local save:', err);
-          // fall through to local save
         }
       }
 
-      // Local-mode save (no userId or backend unreachable)
       const localKey = `wt_${username}`;
       const stored = localStorage.getItem(localKey);
       const arr = stored ? JSON.parse(stored) : [];
@@ -271,7 +268,6 @@
     });
 
     function appendWorkoutToList(w) {
-      // Remove "No workouts yet." if present
       if (workoutsList.children.length === 1 && workoutsList.children[0].textContent.includes('No workouts yet')) {
         workoutsList.innerHTML = '';
       }
@@ -279,33 +275,6 @@
       const name = w.exerciseName || w.exercise || 'Unknown Exercise';
       li.textContent = `${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
       workoutsList.appendChild(li);
-    }
-
-    async function toggleFavorite(id) {
-      const workout = allWorkouts.find(w => w.id == id);
-      if (!workout) return;
-      workout.favorite = !workout.favorite;
-
-      // Try backend update
-      if (userId && id) {
-        try {
-          await fetch(`${WORKOUTS_API}/${id}/favorite`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ favorite: workout.favorite })
-          });
-        } catch (err) {
-          console.warn('Favorite update failed on backend:', err);
-        }
-      } else {
-        // Local mode
-        const localKey = `wt_${username}`;
-        localStorage.setItem(localKey, JSON.stringify(allWorkouts));
-      }
-
-      // Re-render with new favorite state
-      allWorkouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
-      renderWorkouts(allWorkouts);
     }
 
     const sortSelect = document.getElementById('sortBy');
