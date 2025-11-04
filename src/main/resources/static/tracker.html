@@ -4,6 +4,14 @@
   <meta charset="UTF-8" />
   <title>Workout Tracker</title>
   <link rel="stylesheet" href="style.css" />
+  <style>
+    .favorite {
+      border: 2px solid gold;
+      background-color: #fffbe6;
+      border-radius: 6px;
+      padding: 4px 8px;
+    }
+  </style>
 </head>
 <body>
   <h1>Workout Tracker</h1>
@@ -21,20 +29,20 @@
 
   <h2>Your Workouts</h2>
   <div class="controls">
-  <label for="sortBy">Sort by:</label>
-  <select id="sortBy">
-    <option value="">Default (Original Order)</option>
-    <option value="exercise">Exercise Name (A–Z)</option>
-    <option value="sets">Sets (High → Low)</option>
-    <option value="reps">Reps (High → Low)</option>
-    <option value="weight">Weight (High → Low)</option>
-    <option value="date">Date (Newest → Oldest)</option>
-  </select>
+    <label for="sortBy">Sort by:</label>
+    <select id="sortBy">
+      <option value="">Default (Original Order)</option>
+      <option value="exercise">Exercise Name (A–Z)</option>
+      <option value="sets">Sets (High → Low)</option>
+      <option value="reps">Reps (High → Low)</option>
+      <option value="weight">Weight (High → Low)</option>
+      <option value="date">Date (Newest → Oldest)</option>
+    </select>
 
-  <label for="filterExercise">Filter by exercise:</label>
-  <select id="filterExercise">
-    <option value="">All</option>
-  </select>
+    <label for="filterExercise">Filter by exercise:</label>
+    <select id="filterExercise">
+      <option value="">All</option>
+    </select>
   </div>
 
   <ul id="workouts-list"></ul>
@@ -44,22 +52,18 @@
     const form = document.getElementById('workout-form');
     const exerciseSelect = document.getElementById('exercise');
 
-    // Read identity from localStorage (signup previously set these)
     const userIdRaw = localStorage.getItem('user_id');
     const userId = userIdRaw ? parseInt(userIdRaw, 10) : null;
     const username = localStorage.getItem('username') || null;
 
-    // If no user info at all, send them to signup/login
     if (!userId && !username) {
       alert('Please sign up or log in first.');
       window.location.href = 'signup.html';
     }
 
-    const API_BASE = ''; // relative base -> uses same origin, e.g. '/api/...'
+    const API_BASE = '';
     const EXERCISES_API = API_BASE + '/api/exercises';
     const WORKOUTS_API = API_BASE + '/api/workouts';
-
-    // Fallback exercise list (used if backend /api/exercises fails)
     const DEFAULT_EXERCISES = [
       'Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Pull Ups', 'Barbell Row', 'Leg Press'
     ];
@@ -81,7 +85,7 @@
         case 'weight':
           sorted.sort((a, b) => (b.weight || 0) - (a.weight || 0));
           break;
-          case 'date':
+        case 'date':
           sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
           break;
       }
@@ -92,7 +96,7 @@
       if (!exerciseFilter) return workouts;
       return workouts.filter(w => (w.exerciseName || w.exercise) === exerciseFilter);
     }
-    
+
     async function loadExercises() {
       try {
         const res = await fetch(EXERCISES_API);
@@ -115,7 +119,6 @@
       });
     }
 
-    // Fetch workouts either from backend (if userId is present) or from localStorage if not
     async function fetchWorkouts() {
       workoutsList.innerHTML = '';
       let workouts = [];
@@ -124,19 +127,19 @@
           const res = await fetch(`${WORKOUTS_API}?user_id=${encodeURIComponent(userId)}`);
           if (!res.ok) throw new Error('backend fetch failed');
           workouts = await res.json();
+          // --- Sort favorites to top ---
+          workouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
+          allWorkouts = workouts;
           renderWorkouts(workouts);
           return;
         } catch (err) {
           console.warn('Fetching workouts from backend failed, falling back to localStorage:', err);
-          // fallthrough to local mode
         }
       }
 
-      // Local mode keyed by username
       const localKey = `wt_${username}`;
       const stored = localStorage.getItem(localKey);
       workouts = stored ? JSON.parse(stored) : [];
-
       allWorkouts = workouts;
       renderWorkouts(workouts);
     }
@@ -147,104 +150,15 @@
         workoutsList.innerHTML = '<li>No workouts yet.</li>';
         return;
       }
+
       workouts.forEach(w => {
         const li = document.createElement('li');
-        const name = w.exerciseName || w.exercise || w.exerciseName || 'Unknown Exercise';
-        li.textContent = `${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
+        const name = w.exerciseName || w.exercise || 'Unknown Exercise';
+        const star = w.favorite ? '⭐ ' : '';
+        li.className = w.favorite ? 'favorite' : '';
+        li.textContent = `${star}${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
         workoutsList.appendChild(li);
       });
-    }
-
-    // Add new workout (POST to backend if userId exists; otherwise save locally)
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const exercise = exerciseSelect.value;
-      const sets = parseInt(document.getElementById('sets').value, 10);
-      const reps = parseInt(document.getElementById('reps').value, 10);
-      const weightRaw = document.getElementById('weight').value;
-      const weight = weightRaw ? parseFloat(weightRaw) : null;
-
-      if (!exercise) {
-        alert('Please select an exercise.');
-        return;
-      }
-
-      const payload = {
-        user_id: userId, // may be null
-        username: username, // helpful if backend can accept username
-        exercise: exercise,
-        sets: sets,
-        reps: reps,
-        weight: weight
-      };
-
-      // If we have a userId, try backend first
-      if (userId) {
-        try {
-          const res = await fetch(WORKOUTS_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          // Read body even if not ok, to show server error message
-          const saved = await (res.headers.get('Content-Type')?.includes('application/json') ? res.json() : res.text());
-
-          if (!res.ok) {
-            console.error('Backend rejected workout:', saved);
-            alert(saved?.error || saved || 'Failed to save workout to server');
-            return;
-          }
-
-          // If server responds with the saved workout, use it; else use local payload
-          const savedWorkout = saved && typeof saved === 'object' ? saved : {
-            exerciseName: exercise,
-            sets, reps, weight
-          };
-
-          // update UI
-          appendWorkoutToList(savedWorkout);
-
-          // store lastWorkout and redirect
-          sessionStorage.setItem('lastWorkout', JSON.stringify(savedWorkout));
-          form.reset();
-          window.location.href = 'confirmation.html';
-          return;
-        } catch (err) {
-          console.warn('POST to backend failed, falling back to local save:', err);
-          // fall through to local save
-        }
-      }
-
-      // Local-mode save (no userId or backend unreachable)
-      const localKey = `wt_${username}`;
-      const stored = localStorage.getItem(localKey);
-      const arr = stored ? JSON.parse(stored) : [];
-
-      const localSaved = {
-        exerciseName: exercise,
-        sets, reps, weight,
-        createdAt: new Date().toISOString()
-      };
-      arr.push(localSaved);
-      localStorage.setItem(localKey, JSON.stringify(arr));
-
-      appendWorkoutToList(localSaved);
-      sessionStorage.setItem('lastWorkout', JSON.stringify(localSaved));
-      form.reset();
-      window.location.href = 'confirmation.html';
-    });
-
-    function appendWorkoutToList(w) {
-      // Remove "No workouts yet." if present
-      if (workoutsList.children.length === 1 && workoutsList.children[0].textContent.includes('No workouts yet')) {
-        workoutsList.innerHTML = '';
-      }
-      const li = document.createElement('li');
-      const name = w.exerciseName || w.exercise || 'Unknown Exercise';
-      li.textContent = `${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
-      workoutsList.appendChild(li);
     }
 
     const sortSelect = document.getElementById('sortBy');
@@ -258,29 +172,24 @@
       const exerciseFilter = filterSelect.value;
       const filtered = filterWorkouts(allWorkouts, exerciseFilter);
       const sorted = sortBy ? sortWorkouts(filtered, sortBy) : filtered;
+      // Keep favorites on top regardless of sort
+      sorted.sort((a, b) => (b.favorite === true) - (a.favorite === true));
       renderWorkouts(sorted);
     }
-    
-    
-    // Initialize UI
+
     loadExercises();
     fetchWorkouts();
 
-    // Reset dropdowns each time the page loads
     sortSelect.value = '';
     filterSelect.value = '';
 
-    // --- Logout logic ---
     document.getElementById('logoutBtn').addEventListener('click', () => {
-      // Clear all stored login/session data
       localStorage.removeItem('user_id');
       localStorage.removeItem('username');
       sessionStorage.clear();
-
-      // Redirect to login page
       window.location.href = 'login.html';
     });
-
   </script>
 </body>
 </html>
+
