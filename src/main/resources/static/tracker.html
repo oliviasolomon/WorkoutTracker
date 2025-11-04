@@ -9,7 +9,18 @@
       border: 2px solid gold;
       background-color: #fffbe6;
       border-radius: 6px;
-      padding: 4px 8px;
+      padding: 6px 10px;
+      margin-bottom: 5px;
+    }
+    .fav-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.3em;
+      margin-left: 10px;
+    }
+    .fav-btn:hover {
+      transform: scale(1.2);
     }
   </style>
 </head>
@@ -127,7 +138,6 @@
           const res = await fetch(`${WORKOUTS_API}?user_id=${encodeURIComponent(userId)}`);
           if (!res.ok) throw new Error('backend fetch failed');
           workouts = await res.json();
-          // --- Sort favorites to top ---
           workouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
           allWorkouts = workouts;
           renderWorkouts(workouts);
@@ -153,17 +163,54 @@
 
       workouts.forEach(w => {
         const li = document.createElement('li');
-        const name = w.exerciseName || w.exercise || 'Unknown Exercise';
-        const star = w.favorite ? '⭐ ' : '';
         li.className = w.favorite ? 'favorite' : '';
-        li.textContent = `${star}${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
+        const name = w.exerciseName || w.exercise || 'Unknown Exercise';
+        const favIcon = w.favorite ? '⭐' : '☆';
+        li.innerHTML = `
+          ${w.favorite ? '⭐' : ''}${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}
+          <button class="fav-btn" data-id="${w.id}" title="Toggle Favorite">${favIcon}</button>
+        `;
         workoutsList.appendChild(li);
       });
+
+      // Attach favorite toggle buttons
+      document.querySelectorAll('.fav-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+          const id = e.target.getAttribute('data-id');
+          toggleFavorite(id);
+        });
+      });
+    }
+
+    async function toggleFavorite(id) {
+      const workout = allWorkouts.find(w => w.id == id);
+      if (!workout) return;
+      workout.favorite = !workout.favorite;
+
+      // Try backend update
+      if (userId && id) {
+        try {
+          await fetch(`${WORKOUTS_API}/${id}/favorite`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ favorite: workout.favorite })
+          });
+        } catch (err) {
+          console.warn('Favorite update failed on backend:', err);
+        }
+      } else {
+        // Local mode
+        const localKey = `wt_${username}`;
+        localStorage.setItem(localKey, JSON.stringify(allWorkouts));
+      }
+
+      // Re-render with new favorite state
+      allWorkouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
+      renderWorkouts(allWorkouts);
     }
 
     const sortSelect = document.getElementById('sortBy');
     const filterSelect = document.getElementById('filterExercise');
-
     sortSelect.addEventListener('change', updateDisplayedWorkouts);
     filterSelect.addEventListener('change', updateDisplayedWorkouts);
 
@@ -172,7 +219,6 @@
       const exerciseFilter = filterSelect.value;
       const filtered = filterWorkouts(allWorkouts, exerciseFilter);
       const sorted = sortBy ? sortWorkouts(filtered, sortBy) : filtered;
-      // Keep favorites on top regardless of sort
       sorted.sort((a, b) => (b.favorite === true) - (a.favorite === true));
       renderWorkouts(sorted);
     }
@@ -192,4 +238,3 @@
   </script>
 </body>
 </html>
-
