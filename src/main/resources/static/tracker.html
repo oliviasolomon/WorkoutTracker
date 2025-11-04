@@ -173,7 +173,23 @@
         workoutsList.appendChild(li);
       });
 
-      // Add new workout (POST to backend if userId exists; otherwise save locally)
+      document.querySelectorAll('.fav-btn').forEach(btn => {
+      btn.addEventListener('click', async (e) => {
+        const id = e.target.getAttribute('data-id');
+
+        // call backend to toggle favorite
+        try {
+          await fetch(`/workouts/${id}/favorite`, { method: 'POST' });
+        } catch (err) {
+          console.warn('Failed to update favorite on backend:', err);
+        }
+
+        // Instantly toggle icon
+        e.target.textContent = e.target.textContent === '⭐' ? '☆' : '⭐';
+      });
+    });
+
+    // Add new workout (POST to backend if userId exists; otherwise save locally)
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
@@ -263,15 +279,6 @@
       const name = w.exerciseName || w.exercise || 'Unknown Exercise';
       li.textContent = `${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
       workoutsList.appendChild(li);
-    }
-      
-      // Attach favorite toggle buttons
-      document.querySelectorAll('.fav-btn').forEach(btn => {
-        btn.addEventListener('click', async (e) => {
-          const id = e.target.getAttribute('data-id');
-          toggleFavorite(id);
-        });
-      });
     }
 
     async function toggleFavorite(id) {
