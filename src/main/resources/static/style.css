@@ -1,4 +1,4 @@
-/* blue theme?? what do yall think */
+/* blue! */
 
 /* import font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -15,7 +15,7 @@
   --card-max: 720px;
 }
 
-/* page */
+/* global resets */
 *{box-sizing:border-box}
 html,body{height:100%}
 body{
@@ -46,69 +46,59 @@ h1{
 }
 p.lead{ color:var(--text-grey); text-align:center; margin:0 0 1rem 0; }
 
-/* form row: inputs horizontally across one row */
-.form-row{
+/* form row: horizontal inputs for exercise, sets, reps, weight */
+.exercise-row{
   display:flex;
   gap:0.6rem;
   align-items:center;
   margin:0.75rem 0 1rem 0;
 }
 
-/* inputs match button sizing and rounded look */
-.form-row input,
-.form-row select{
-  flex:1;
-  min-width:0;                /* allow flex children to shrink on small screens */
-  padding:0.8rem 1rem;
-  font-size:1rem;
-  border-radius:var(--radius);
-  border:2px solid var(--blue);   /* blue border like buttons */
-  background:var(--panel);
-  color:var(--text-grey);
-  box-shadow: 0 6px 14px rgba(0,0,0,0.6);
-  outline:none;
-  transition: transform .08s ease, box-shadow .12s ease, background .12s;
+/* unify buttons, inputs, selects */
+button,
+input,
+select {
+  padding: 0.8rem 1.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: var(--radius);
+  border: 2px solid var(--blue); 
+  background: transparent;
+  color: var(--text-blue);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+  outline: none;
+  transition: background 0.12s ease, color 0.12s ease, transform 0.08s;
+  height: 44px;
+  box-sizing: border-box;
 }
 
-/* ensure inputs and selects have same height as buttons visually */
-input::-webkit-outer-spin-button,
-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-.form-row input:focus,
-.form-row select:focus{
-  border-color:var(--blue-2);
+/* hover and focus for inputs/selects */
+input:hover,
+select:hover,
+input:focus,
+select:focus {
+  border-color: var(--blue-2);
+  background: var(--panel);
+  color: var(--text-blue);
   box-shadow: 0 10px 22px rgba(59,130,246,0.12);
 }
 
-/* primary button style: blue border, on hover fill becomes blue */
-button{
-  padding:0.8rem 1.25rem;
-  border-radius:var(--radius);
-  font-weight:600;
-  font-size:1rem;
-  background:transparent;
-  color:var(--text-blue);
-  border:2px solid var(--blue);
-  cursor:pointer;
-  transition: background .12s ease, color .12s ease, transform .08s;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+/* exercise row inputs flex horizontally */
+.exercise-row input,
+.exercise-row select{
+  flex:1;
+  min-width:0;
 }
 
+/* button hover effect */
 button:hover,
-button:active{
-  background:var(--blue);
-  color:var(--whiteish);
+button:active {
+  background: var(--blue);
+  color: var(--whiteish);
   transform: translateY(-2px);
 }
 
-/* secondary button (muted) */
-button.secondary{
-  border-color: rgba(255,255,255,0.06);
-  color:var(--text-grey);
-}
-button.secondary:hover{ background: rgba(255,255,255,0.03); color:var(--text-blue) }
-
-/* workout list wrapper — centered and limited width so items don't span full page */
+/* workout list wrapper — centered and limited width */
 ul.workouts{
   list-style:none;
   margin:1rem auto;
@@ -138,7 +128,7 @@ ul.workouts li{
   flex-direction:column;
   gap:0.2rem;
   align-items:flex-start;
-  flex:1;                 /* take remaining space */
+  flex:1;
   min-width:0;
 }
 .workout-title{
@@ -162,10 +152,10 @@ ul.workouts li{
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  height:40px;
-  width:40px;
+  height:44px;
+  width:44px;
   padding:0;
-  border-radius:10px;
+  border-radius:12px;
   border:2px solid var(--blue);
   background:transparent;
   color:var(--text-blue);
@@ -174,9 +164,9 @@ ul.workouts li{
 }
 .fav-btn:hover{ background:var(--blue); color:var(--whiteish); transform: translateY(-2px); }
 
-/* ensure favorite button doesn't push layout on smaller screens */
+/* responsive adjustments */
 @media (max-width:640px){
-  .form-row{ flex-direction:column; }
+  .exercise-row{ flex-direction:column; }
   .fav-btn{ width:44px; height:44px; border-radius:12px; }
   ul.workouts{ padding:0 0.5rem; }
 }
