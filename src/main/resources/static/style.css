@@ -1,16 +1,13 @@
-/* blue! */
+/* red! */
 
 /* import font */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
 :root{
-  --bg: #121217;
-  --panel: #16161b;
-  --blue: #3b82f6;
-  --blue-2: #60a5fa;
-  --text-blue: #cfe8ff;
-  --text-grey: #d7d7db;
-  --whiteish: #f6f7fb;
+  --grey: #484c65;
+  --accent: #ff5a5f;
+  --white: #f4f3ee;
+  --dark: #2b2d3b;
   --radius: 12px;
   --card-max: 720px;
 }
@@ -21,8 +18,8 @@ html,body{height:100%}
 body{
   margin:0;
   padding:2rem;
-  background:var(--bg);
-  color:var(--text-grey);
+  background:var(--dark);
+  color:var(--grey);
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
@@ -30,15 +27,7 @@ body{
   display: flex;
   flex-direction: column;     /* stack sections vertically */
   align-items: center;        /* center them */
-  gap: 2rem;                  /* spacing between sections */
   min-height: 100vh;
-}
-
-/* FIXED: do NOT force everything into flex containers */
-body > * {
-  display: block;             /* normal block layout */
-  width: 100%;
-  text-align: center;
 }
 
 /* container to center content and limit width */
@@ -56,9 +45,15 @@ body > * {
 h1{
   margin:0 0 0.75rem 0;
   margin-bottom: 1.5rem;
-  color:var(--text-blue);
+  color:var(--accent);
   font-weight:700;
   text-align:center;
+}
+p{ 
+  color:var(--white); 
+  text-align:center; 
+  margin:0 0 1rem 0; 
+}
 
 /* form row: horizontal inputs */
 .exercise-row{
@@ -77,10 +72,9 @@ select {
   font-size: 1rem;
   font-weight: 600;
   border-radius: var(--radius);
-  border: 2px solid var(--blue); 
-  background: transparent;
-  color: var(--text-blue);
-  box-shadow: 0 6px 16px rgba(0,0,0,0.6);
+  border: 2px solid var(--grey); 
+  background: var(--grey);
+  color: var(--white);
   outline: none;
   transition: background 0.12s ease, color 0.12s ease, transform 0.08s;
   height: 44px;
@@ -92,9 +86,9 @@ input:hover,
 select:hover,
 input:focus,
 select:focus {
-  border-color: var(--blue-2);
-  background: var(--panel);
-  color: var(--text-blue);
+  border-color: var(--grey);
+  background: var(--grey);
+  color: var(--white);
   box-shadow: 0 10px 22px rgba(59,130,246,0.12);
 }
 
@@ -106,8 +100,9 @@ select:focus {
 
 button:hover,
 button:active {
-  background: var(--blue);
-  color:var(--whiteish);
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--dark);
   transform: translateY(-2px);
 }
 
@@ -130,8 +125,8 @@ ul.workouts li{
   margin:0.5rem 0;
   border-radius:14px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
-  border:2px solid var(--blue);
-  color:var(--text-grey);
+  border:2px solid var(--grey);
+  color:var(--white);
   box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
 
@@ -146,7 +141,7 @@ ul.workouts li{
 }
 .workout-title{
   font-weight:600;
-  color:var(--text-blue);
+  color:var(--white);
   font-size:1rem;
   white-space:nowrap;
   overflow:hidden;
@@ -154,7 +149,7 @@ ul.workouts li{
 }
 .workout-meta{
   font-size:0.9rem;
-  color:var(--text-grey);
+  color:var(--white);
   opacity:0.9;
 }
 
@@ -169,15 +164,15 @@ ul.workouts li{
   width:44px;
   padding:0;
   border-radius:12px;
-  border:2px solid var(--blue);
+  border:2px solid var(--accent);
   background:transparent;
-  color:var(--text-blue);
+  color:var(--white);
   cursor:pointer;
   transition: background .12s ease, transform .08s;
 }
 .fav-btn:hover{ 
-  background:var(--blue); 
-  color:var(--whiteish); 
+  background:var(--accent); 
+  color:var(--dark); 
   transform: translateY(-2px); 
 }
 
