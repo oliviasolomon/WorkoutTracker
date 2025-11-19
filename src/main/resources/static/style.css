@@ -1,18 +1,17 @@
 /* black/grey/red/white theme */
-
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background: #0d0d0d;
-  color: #ffffff;
-  max-width: 500px;
-  margin: 2rem auto;
+  font-family: Stencil Std, fantasy; 
+  background: #0d0d0d; 
+  color: #ffffff; 
+  max-width: 500px; 
+  margin: 2rem auto; 
   padding: 1rem;
-}
+     }
 
 /* headings */
 h1, h2 {
   text-align: center;
-  color: #e63946;
+  color: #8B0000;
   font-weight: 700;
   margin-bottom: 1rem;
 }
@@ -41,12 +40,12 @@ input::placeholder {
 
 input:focus {
   background: #222222;
-  box-shadow: 0 0 0 2px #e63946;
+  box-shadow: 0 0 0 2px #8B0000;
 }
 
 /* button */
 button {
-  background: #e63946;
+  background: #8B0000;
   color: #ffffff;
   font-weight: 600;
   cursor: pointer;
@@ -74,5 +73,5 @@ li {
 
 li:hover {
   background: #222222;
-  border-color: #e63946;
+  border-color: #8B0000;
 }
