@@ -59,12 +59,6 @@ h1{
   color:var(--text-blue);
   font-weight:700;
   text-align:center;
-}
-p.lead{ 
-  color:var(--text-grey); 
-  text-align:center; 
-  margin:0 0 1rem 0; 
-}
 
 /* form row: horizontal inputs */
 .exercise-row{
