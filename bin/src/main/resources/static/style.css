@@ -1,6 +1,38 @@
-body { font-family: Arial, sans-serif; max-width: 500px; margin: 2rem auto; }
-h1, h2 { text-align: center; }
-form { display: flex; gap: .5rem; justify-content: center; }
-input, button { padding: .5rem; font-size: 1rem; }
-ul { list-style: none; padding: 0; }
-li { background: #f3f3f3; margin: .3rem 0; padding: .5rem; border-radius: .3rem; }
+/* Dark / Black / Red / White Theme */
+
+body {
+  font-family: Arial, sans-serif;
+  background: #111;              /* black background */
+  color: #f5f5f5;                /* white text */
+  margin: 0;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1, p {
+  margin-bottom: 1rem;
+}
+
+.auth-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+button {
+  background: #222;               /* dark grey */
+  color: #fff;                    /* white text */
+  border: 2px solid #e4002b;      /* red accent */
+  padding: .8rem 1.4rem;
+  font-size: 1rem;
+  border-radius: 12px;            /* smooth rounded */
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+button:hover {
+  background: #e4002b;            /* red fill on hover */
+  color: #fff;
+  transform: translateY(-2px);
+}
