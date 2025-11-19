@@ -26,11 +26,13 @@ body{
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+
+  /* keep content centered horizontally, but stack vertically */
   display: flex;
   justify-content: center;   /* horizontal centering */
-  align-items: center;       /* vertical centering */
+  align-items: flex-start;   /* align top of container so children stack vertically */
+  min-height: 100vh;
 }
-
 
 /* container to center content and limit width */
 .container{
@@ -62,8 +64,7 @@ p.lead{
   display:flex;
   gap:0.6rem;
   align-items:center;
-  margin:0.75rem 0 1rem 0;
-    margin-top: 1.5rem;
+  margin-top: 1.5rem;
   margin-bottom: 1.5rem;
 }
 
@@ -101,15 +102,14 @@ select:focus {
 .exercise-row select{
   flex:1;
   min-width:0;
-  margin-top: 1.5rem;
-  margin-bottom: 1.5rem;
+  /* removed extra margins so they align with buttons */
 }
 
 /* button hover effect */
 button:hover,
 button:active {
   background: var(--blue);
-  color: var(--whiteish);
+  color:var(--whiteish);
   transform: translateY(-2px);
 }
 
@@ -130,7 +130,6 @@ ul.workouts li{
   gap:0.75rem;
   padding:0.9rem 1rem;
   margin:0.5rem 0;
-  margin-top: 2rem;
   border-radius:14px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
   border:2px solid var(--blue);
@@ -182,7 +181,7 @@ ul.workouts li{
 
 /* responsive adjustments */
 @media (max-width:640px){
-  .exercise-row{ flex-direction:column; }
+  .exercise-row{ flex-direction:column; align-items:stretch; }
   .fav-btn{ width:44px; height:44px; border-radius:12px; }
   ul.workouts{ padding:0 0.5rem; }
 }
