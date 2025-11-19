@@ -37,3 +37,12 @@ button:hover {
   transform: translateY(-2px);
 }
 
+/* making the user input boxes cute */
+input {
+  border-radius: 12px;
+  border: 1px solid #333;
+  padding: 0.6rem 0.8rem;
+  background: #111;
+  color: white;
+}
+
