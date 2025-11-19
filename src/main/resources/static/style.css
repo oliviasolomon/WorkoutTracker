@@ -38,16 +38,24 @@ body{
   max-width:var(--card-max);
   padding:0 1rem;
   text-align: center;        /* center content inside container */
+  display: flex;
+  flex-direction: column;   /* elements stack vertically */
+  gap: 1.5rem;
 }
 
 /* headings */
 h1{
   margin:0 0 0.75rem 0;
+  margin-bottom: 1.5rem;
   color:var(--text-blue);
   font-weight:700;
   text-align:center;
 }
-p.lead{ color:var(--text-grey); text-align:center; margin:0 0 1rem 0; }
+p.lead{ 
+  color:var(--text-grey); 
+  text-align:center; 
+  margin:0 0 1rem 0; 
+}
 
 /* form row: horizontal inputs for exercise, sets, reps, weight */
 .exercise-row{
@@ -55,6 +63,8 @@ p.lead{ color:var(--text-grey); text-align:center; margin:0 0 1rem 0; }
   gap:0.6rem;
   align-items:center;
   margin:0.75rem 0 1rem 0;
+    margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 /* unify buttons, inputs, selects */
@@ -91,6 +101,8 @@ select:focus {
 .exercise-row select{
   flex:1;
   min-width:0;
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 /* button hover effect */
@@ -118,6 +130,7 @@ ul.workouts li{
   gap:0.75rem;
   padding:0.9rem 1rem;
   margin:0.5rem 0;
+  margin-top: 2rem;
   border-radius:14px;
   background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
   border:2px solid var(--blue);
