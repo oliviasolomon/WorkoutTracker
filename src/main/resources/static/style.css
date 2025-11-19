@@ -1,67 +1,148 @@
-/* black/grey/red/white theme */
+:root{
+  --bg: #202020;          /* page background */
+  --grey: #747274;        /* main grey */
+  --accent-1: #9a93df;    /* purple primary */
+  --accent-2: #c4c0e8;    /* purple secondary */
+  --accent-green: #cee182;/* green highlight */
+  --white: #f6f6f7;       /* "white" */
+  --radius: 12px;
+  --panel: #2a292b;       /* slightly lighter than bg for panels */
+}
 
-body {
+/* page */
+body{
   font-family: Arial, sans-serif;
-  background: #0e0d0c;              /* black background */
-  color: #fef1ed;                /* light pinkish text */
+  background: var(--bg);
+  color: var(--white);
   margin: 0;
   padding: 2rem;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* constrain content so lists/cards don't span full width */
+.container{
+  width: 100%;
+  max-width: 760px;   /* overall page width */
+  padding: 0 1rem;
+}
+
+/* headings */
+h1, p {
+  margin: 0 0 1rem 0;
+  color: var(--accent-1);
   text-align: center;
 }
 
-h1, p {
-  margin-bottom: 1rem;
+/* auth buttons row */
+.auth-options{
+  display:flex;
+  gap:1rem;
+  justify-content:center;
+  margin-top:1.5rem;
 }
 
-.auth-options {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  margin-top: 2rem;
+/* buttons */
+button{
+  background: linear-gradient(180deg,var(--accent-1),var(--accent-2));
+  color: var(--white);
+  border: 2px solid rgba(206,225,130,0.06);
+  padding:.8rem 1.4rem;
+  font-size:1rem;
+  border-radius:var(--radius);
+  cursor:pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.45);
+  transition: transform .12s ease, box-shadow .12s ease;
+}
+button:hover{
+  transform: translateY(-3px);
+  box-shadow: 0 12px 26px rgba(0,0,0,0.55);
 }
 
-button {
-  background: #8b8784;               /* grey */
-  color: #fef1ed;                    /* pink text */
-  border: 2px solid #c94644;      /* red accent */
-  padding: .8rem 1.4rem;
-  font-size: 1rem;
-  border-radius: 12px;            /* smooth rounded */
-  cursor: pointer;
-  transition: 0.25s ease;
+/* subtle secondary button style */
+button.secondary{
+  background: linear-gradient(180deg,var(--panel), #353435);
+  color: var(--white);
+  border: 1px solid rgba(255,255,255,0.04);
 }
 
-button:hover {
-  background: #c94644;            /* red fill on hover */
-  color: #fef1ed;
-  transform: translateY(-2px);
+/* lists: don't take full width, centered */
+ul.workouts{
+  list-style:none;
+  padding:0;
+  margin:1rem auto;
+  width:100%;
+  max-width:640px;           /* limits horizontal width of the list */
+  display:block;
 }
 
-/* making the user input boxes cute */
-input {
-  border-radius: 12px;
-  border: 1px solid #333;
-  padding: 0.6rem 0.8rem;
-  background:#0e0d0c;
-  color: white;
+/* each workout card */
+ul.workouts li{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:.75rem;
+  background: linear-gradient(90deg, rgba(154,147,223,0.06), rgba(196,192,232,0.03));
+  border: 1px solid rgba(151,147,200,0.12);
+  color: var(--white);
+  padding:.85rem;
+  margin:.5rem 0;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
 }
 
-ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
+/* card meta text */
+.meta{
+  font-size:.9rem;
+  color: var(--grey);
 }
 
-li {
-  background: #8b8784;
-  margin: 0.3rem 0;
-  padding: 0.7rem;
-  border-radius: 0.6rem;
-  border: 1px solid #c94644;
-  transition: 0.2s ease;
+/* inputs & selects: match buttons and be full-width within their container */
+input, select, textarea{
+  width:100%;
+  padding:.8rem 1.2rem;
+  font-size:1rem;
+  border-radius:var(--radius);
+  border: 2px solid rgba(154,147,223,0.18);
+  background: #141414;
+  color: var(--white);
+  box-sizing:border-box;
+  transition: box-shadow .12s ease, border-color .12s ease;
+}
+input::placeholder, textarea::placeholder{
+  color: #bdb7e6;
+}
+input:focus, select:focus, textarea:focus{
+  outline:none;
+  border-color: var(--accent-1);
+  box-shadow: 0 6px 18px rgba(154,147,223,0.14);
 }
 
-li:hover {
-  background: #c94644;
-  border-color: #5b3a38;
+/* if inputs are placed beside a button in a row, make the input flexible */
+.form-row{ display:flex; gap:.5rem; align-items:center; }
+.form-row input, .form-row select { flex:1; }
+
+/* small utility classes */
+.center { text-align:center; }
+.small { font-size:.85rem; color:var(--grey); }
+
+/* badges/accents using green for success/highlight */
+.badge {
+  background: linear-gradient(180deg, rgba(206,225,130,0.14), rgba(206,225,130,0.06));
+  color: #213014;
+  padding:.3rem .6rem;
+  border-radius:8px;
+  border:1px solid rgba(206,225,130,0.18);
+  font-weight:600;
+  font-size:.85rem;
+}
+
+/* responsive tweaks */
+@media (max-width:640px){
+  .auth-options{ flex-direction:column; gap:.6rem; }
+  ul.workouts{ max-width:100%; padding:0 0.4rem; }
+  body{ padding:1rem; }
 }
