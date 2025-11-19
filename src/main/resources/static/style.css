@@ -177,7 +177,22 @@ ul.workouts li{
   cursor:pointer;
   transition: background .12s ease, transform .08s;
 }
-.fav-btn:hover{ background:var(--blue); color:var(--whiteish); transform: translateY(-2px); }
+.fav-btn:hover{ 
+  background:var(--blue); 
+  color:var(--whiteish); 
+  transform: translateY(-2px); }
+
+h1, h2, h3, h4, h5, h6,
+p,
+section,
+div,
+form,
+ul,
+ol {
+  width: 100%;
+  display: block;
+  margin-bottom: 1.5rem;   /* spacing after each section */
+}
 
 /* responsive adjustments */
 @media (max-width:640px){
