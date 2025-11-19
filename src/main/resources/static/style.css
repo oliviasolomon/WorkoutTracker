@@ -1,77 +1,39 @@
 /* black/grey/red/white theme */
+
 body {
-  font-family: Stencil Std, fantasy; 
-  background: #0d0d0d; 
-  color: #ffffff; 
-  max-width: 500px; 
-  margin: 2rem auto; 
-  padding: 1rem;
-     }
-
-/* headings */
-h1, h2 {
+  font-family: Arial, sans-serif;
+  background: #111;              /* black background */
+  color: #f5f5f5;                /* white text */
+  margin: 0;
+  padding: 2rem;
   text-align: center;
-  color: #8B0000;
-  font-weight: 700;
+}
+
+h1, p {
   margin-bottom: 1rem;
 }
 
-/* form */
-form {
+.auth-options {
   display: flex;
-  gap: 0.5rem;
   justify-content: center;
-  margin-bottom: 1rem;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
-input, button {
-  padding: 0.6rem;
-  font-size: 1rem;
-  border-radius: 0.5rem;
-  border: none;
-  background: #1a1a1a;
-  color: #ffffff;
-  transition: 0.2s;
-}
-
-input::placeholder {
-  color: #aaaaaa;
-}
-
-input:focus {
-  background: #222222;
-  box-shadow: 0 0 0 2px #8B0000;
-}
-
-/* button */
 button {
-  background: #8B0000;
-  color: #ffffff;
-  font-weight: 600;
+  background: #222;               /* dark grey */
+  color: #fff;                    /* white text */
+  border: 2px solid #e4002b;      /* red accent */
+  padding: .8rem 1.4rem;
+  font-size: 1rem;
+  border-radius: 12px;            /* smooth rounded */
   cursor: pointer;
+  transition: 0.25s ease;
 }
 
 button:hover {
-  background: #cc2f3b;
+  background: #e4002b;            /* red fill on hover */
+  color: #fff;
+  transform: translateY(-2px);
 }
 
-/* workout list */
-ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 1rem;
-}
-
-li {
-  background: #1a1a1a;
-  margin: 0.3rem 0;
-  padding: 0.7rem;
-  border-radius: 0.6rem;
-  border: 1px solid #2a2a2a;
-  transition: 0.2s;
-}
-
-li:hover {
-  background: #222222;
-  border-color: #8B0000;
-}
