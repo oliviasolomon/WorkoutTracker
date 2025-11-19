@@ -6,10 +6,10 @@
 :root{
   --bg: #121217;
   --panel: #16161b;
-  --blue: #3b82f6;        /* primary blue (border & hover fill) */
-  --blue-2: #60a5fa;      /* lighter blue */
-  --text-blue: #cfe8ff;   /* light blue text */
-  --text-grey: #d7d7db;   /* light grey text */
+  --blue: #3b82f6;
+  --blue-2: #60a5fa;
+  --text-blue: #cfe8ff;
+  --text-grey: #d7d7db;
   --whiteish: #f6f7fb;
   --radius: 12px;
   --card-max: 720px;
@@ -26,17 +26,19 @@ body{
   font-family: "Poppins", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   -webkit-font-smoothing:antialiased;
   -moz-osx-font-smoothing:grayscale;
+
   display: flex;
-  justify-content: center;   /* horizontal centering */
-  align-items: flex-start;   /* align top of container so children stack vertically */
+  flex-direction: column;     /* stack sections vertically */
+  align-items: center;        /* center them */
+  gap: 2rem;                  /* spacing between sections */
   min-height: 100vh;
 }
 
+/* FIXED: do NOT force everything into flex containers */
 body > * {
-  display: block;
+  display: block;             /* normal block layout */
   width: 100%;
   text-align: center;
-  margin-bottom: 1.5rem;
 }
 
 /* container to center content and limit width */
@@ -44,9 +46,9 @@ body > * {
   width:100%;
   max-width:var(--card-max);
   padding:0 1rem;
-  text-align: center;        /* center content inside container */
+  text-align: center;
   display: flex;
-  flex-direction: column;   /* elements stack vertically */
+  flex-direction: column;
   gap: 1.5rem;
 }
 
@@ -64,7 +66,7 @@ p.lead{
   margin:0 0 1rem 0; 
 }
 
-/* form row: horizontal inputs for exercise, sets, reps, weight */
+/* form row: horizontal inputs */
 .exercise-row{
   display:flex;
   gap:0.6rem;
@@ -91,7 +93,7 @@ select {
   box-sizing: border-box;
 }
 
-/* hover and focus for inputs/selects */
+/* hover and focus */
 input:hover,
 select:hover,
 input:focus,
@@ -102,15 +104,12 @@ select:focus {
   box-shadow: 0 10px 22px rgba(59,130,246,0.12);
 }
 
-/* exercise row inputs flex horizontally */
 .exercise-row input,
 .exercise-row select{
   flex:1;
   min-width:0;
-  /* removed extra margins so they align with buttons */
 }
 
-/* button hover effect */
 button:hover,
 button:active {
   background: var(--blue);
@@ -118,7 +117,7 @@ button:active {
   transform: translateY(-2px);
 }
 
-/* workout list wrapper — centered and limited width */
+/* workout list wrapper */
 ul.workouts{
   list-style:none;
   margin:1rem auto;
@@ -127,7 +126,7 @@ ul.workouts{
   max-width:var(--card-max);
 }
 
-/* each workout box — blue border, rounded, card layout */
+/* workout box */
 ul.workouts li{
   display:flex;
   align-items:center;
@@ -142,7 +141,7 @@ ul.workouts li{
   box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
 
-/* left area: workout info (name / meta) */
+/* workout info */
 .workout-info{
   display:flex;
   flex-direction:column;
@@ -165,7 +164,7 @@ ul.workouts li{
   opacity:0.9;
 }
 
-/* favorite button to the right of each box */
+/* favorite button */
 .fav-btn{
   margin-left:0.6rem;
   flex:0 0 auto;
@@ -185,31 +184,16 @@ ul.workouts li{
 .fav-btn:hover{ 
   background:var(--blue); 
   color:var(--whiteish); 
-  transform: translateY(-2px); }
-
-h1, h2, h3, h4, h5, h6,
-p,
-section,
-div,
-form,
-ul,
-ol {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 2rem;   /* vertical spacing between sections */
-  text-align: center;   /* spacing after each section */
+  transform: translateY(-2px); 
 }
 
-/* responsive adjustments */
+/* responsive */
 @media (max-width:640px){
   .exercise-row{ flex-direction:column; align-items:stretch; }
   .fav-btn{ width:44px; height:44px; border-radius:12px; }
   ul.workouts{ padding:0 0.5rem; }
 }
 
-/* utility classes */
+/* utilities */
 .center{text-align:center}
 .small{font-size:0.9rem;color:var(--text-grey)}
