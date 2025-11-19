@@ -190,8 +190,12 @@ form,
 ul,
 ol {
   width: 100%;
-  display: block;
-  margin-bottom: 1.5rem;   /* spacing after each section */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 2rem;   /* vertical spacing between sections */
+  text-align: center;   /* spacing after each section */
 }
 
 /* responsive adjustments */
