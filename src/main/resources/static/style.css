@@ -162,6 +162,18 @@ ul.workouts li {
   justify-self: center;
   align-self: center;
   margin-left: 0;
+  flex:0 0 auto;
+  display:inline-flex;
+  align-items:center;
+  height:44px;
+  width:44px;
+  padding:0;
+  border-radius:12px;
+  border:2px solid var(--accent);
+  background:transparent;
+  color:var(--white);
+  cursor:pointer;
+  transition: background .12s ease, transform .08s;
 }
 
 /* responsive: stack columns on narrow screens */
@@ -173,61 +185,6 @@ ul.workouts li {
   .fav-btn { justify-self: start; margin-top: 0.5rem; }
 }
 
-/* workout box */
-ul.workouts li{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:0.75rem;
-  padding:0.9rem 1rem;
-  margin:0.5rem 0;
-  border-radius:14px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.06));
-  border:2px solid var(--grey);
-  color:var(--white);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
-}
-
-/* workout info */
-.workout-info{
-  display:flex;
-  flex-direction:column;
-  gap:0.2rem;
-  align-items:flex-start;
-  flex:1;
-  min-width:0;
-}
-.workout-title{
-  font-weight:600;
-  color:var(--white);
-  font-size:1rem;
-  white-space:nowrap;
-  overflow:hidden;
-  text-overflow:ellipsis;
-}
-.workout-meta{
-  font-size:0.9rem;
-  color:var(--white);
-  opacity:0.9;
-}
-
-/* favorite button */
-.fav-btn{
-  margin-left:0.6rem;
-  flex:0 0 auto;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  height:44px;
-  width:44px;
-  padding:0;
-  border-radius:12px;
-  border:2px solid var(--accent);
-  background:transparent;
-  color:var(--white);
-  cursor:pointer;
-  transition: background .12s ease, transform .08s;
-}
 .fav-btn:hover{ 
   background:var(--accent); 
   color:var(--dark); 
