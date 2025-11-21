@@ -1,4 +1,5 @@
 package edu.vt.workout.model;
+
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
@@ -51,6 +52,8 @@ public class Metric
      *            neck circumference of the user
      * @param waist
      *            waist circumference of the user
+     * @param hips 
+     *            hip measurement (for female-presenting persons)
      */
     public Metric(
         Integer age,
@@ -58,7 +61,8 @@ public class Metric
         Double weight,
         String sex,
         Double neck,
-        Double waist)
+        Double waist,
+        Double hips)
     {
         this.age = age;
         this.height = height;
@@ -66,6 +70,20 @@ public class Metric
         this.sex = sex;
         this.neck = neck;
         this.waist = waist;
+        this.hips = hips;
+        date = LocalDateTime.now();
+    }
+
+
+    public Metric()
+    {
+        this.age = null;
+        this.height = null;
+        this.weight = null;
+        this.sex = null;
+        this.neck = null;
+        this.waist = null;
+        this.hips = null;
         date = LocalDateTime.now();
     }
 
@@ -173,7 +191,8 @@ public class Metric
     {
         this.waist = waist;
     }
-    
+
+
     // [Female Only] Hip Size
     public Double getHips()
     {

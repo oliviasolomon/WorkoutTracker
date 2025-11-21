@@ -2,10 +2,10 @@ package edu.vt.workout.model;
 
 // -------------------------------------------------------------------------
 /**
- *  Class for calculating different body metrics
+ * Class for calculating different body metrics
  * 
- *  @author jbrent22
- *  @version Nov 3, 2025
+ * @author jbrent22
+ * @version Nov 3, 2025
  */
 public class MetricCalculator
 {
@@ -21,7 +21,7 @@ public class MetricCalculator
      *            in pounds
      * @return double of BMI
      */
-    public double calculateBMI(double height, double weight)
+    public static double calculateBMI(double height, double weight)
     {
         return 703 * weight / Math.pow(height, 2);
     }
@@ -40,7 +40,7 @@ public class MetricCalculator
      * @param hips
      * @return double of percentage body fat (between 0 and 100)
      */
-    public double calculateFatPercent(
+    public static double calculateFatPercent(
         double height,
         double weight,
         String sex,
@@ -79,7 +79,7 @@ public class MetricCalculator
      * @param hips
      * @return double pounds mass of everything except fat
      */
-    public double leanBodyMass(
+    public static double leanBodyMass(
         double height,
         double weight,
         String sex,
@@ -96,7 +96,7 @@ public class MetricCalculator
 
     // Used the bfp formula for males in USC units found here:
     // https://www.calculator.net/body-fat-calculator.html
-    private
+    private static
         double
         fatPercentMale(double height, double weight, double neck, double waist)
     {
@@ -108,14 +108,18 @@ public class MetricCalculator
 
     // Used the bfp formula for females in USC units found here:
     // https://www.calculator.net/body-fat-calculator.html
-    private double fatPercentFemale(
+    private static double fatPercentFemale(
         double height,
         double weight,
         double neck,
         double waist,
-        double hips)
+        Double hips)
     {
-        double term1 = 163.205 * Math.log10(waist + hips - neck);
+        if (hips == null)
+        {
+            return fatPercentMale(height, weight, neck, waist);
+        }
+        double term1 = 163.205 * Math.log10(waist + hips.doubleValue() - neck);
         double term2 = 97.684 * Math.log10(height);
         return term1 - term2 - 78.387;
     }
