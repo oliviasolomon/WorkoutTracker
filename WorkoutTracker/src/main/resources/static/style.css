@@ -25,12 +25,12 @@ body{
   -moz-osx-font-smoothing:grayscale;
 
   display: flex;
-  flex-direction: column;     /* stack sections vertically */
-  align-items: center;        /* center them */
+  flex-direction: column;
+  align-items: center;
   min-height: 100vh;
 }
 
-/* container to center content and limit width */
+/* container */
 .container{
   width:100%;
   max-width:var(--card-max);
@@ -41,7 +41,7 @@ body{
   gap: 1.5rem;
 }
 
-/* top navigation bar */
+/* FIXED NAV SECTION */
 .top-nav{
   width:100%;
   max-width:var(--card-max);
@@ -56,16 +56,19 @@ body{
   box-sizing: border-box;
   margin-bottom: 1rem;
 }
+
 .top-nav .brand{
   color:var(--accent);
   font-weight:700;
   font-size:1.05rem;
 }
+
 .top-nav .nav-links{ 
   display:flex; 
   gap:0.5rem;
   align-items:center;
 }
+
 .top-nav a{
   color:var(--white);
   text-decoration:none;
@@ -74,8 +77,13 @@ body{
   font-weight:600;
   transition: background 0.12s ease;
 }
+
 .top-nav a.active,
-.top-nav a:hover{ background:var(--accent); color:var(--dark); }
+.top-nav a:hover{ 
+  background:var(--accent); 
+  color:var(--dark); 
+}
+
 .top-nav .logout-btn{
   background:var(--accent);
   color:var(--dark);
@@ -86,6 +94,7 @@ body{
   cursor:pointer;
   transition: transform 0.08s;
 }
+
 .top-nav .logout-btn:hover{
   transform:translateY(-2px);
   background:var(--accent);
@@ -105,7 +114,7 @@ p{
   margin:0 0 1rem 0; 
 }
 
-/* form row: horizontal inputs */
+/* form row */
 .exercise-row{
   display:flex;
   gap:0.6rem;
@@ -122,7 +131,7 @@ select {
   font-size: 1rem;
   font-weight: 600;
   border-radius: var(--radius);
-  border: 2px solid var(--grey); 
+  border: 2px solid var(--grey);
   background: var(--grey);
   color: var(--white);
   outline: none;
@@ -131,7 +140,6 @@ select {
   box-sizing: border-box;
 }
 
-/* hover and focus */
 input:hover,
 select:hover,
 input:focus,
@@ -156,7 +164,7 @@ button:active {
   transform: translateY(-2px);
 }
 
-/* workout list wrapper */
+/* workout list */
 ul.workouts{
   list-style:none;
   margin:1rem auto;
@@ -167,10 +175,9 @@ ul.workouts{
   box-sizing: border-box;
 }
 
-/* make each item a 2-column "table" (exercise | fav) */
 ul.workouts li {
   display: grid;
-  grid-template-columns: 1fr 48px; /* col1 = exercise (fluid), col2 = favorite button (fixed) */
+  grid-template-columns: 1fr 48px;
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
@@ -182,7 +189,6 @@ ul.workouts li {
   box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
 
-/* left column: force left-aligned text but keep item centered block */
 .workout-info {
   display: block;
   text-align: left;
@@ -190,7 +196,6 @@ ul.workouts li {
   min-width: 0;
 }
 
-/* ensure title and meta layout inside left column */
 .workout-title { 
   margin: 0;
   font-weight: 600;
@@ -200,6 +205,7 @@ ul.workouts li {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
 .workout-meta {
   margin-top: 0.2rem;
   font-size: 0.9rem;
@@ -207,7 +213,7 @@ ul.workouts li {
   opacity: 0.9;
 }
 
-/* favorite button sits in column 2 and is centered inside it */
+/* favorite button */
 .fav-btn {
   justify-self: center;
   align-self: center;
@@ -226,13 +232,15 @@ ul.workouts li {
   transition: background .12s ease, transform .08s;
 }
 
-/* responsive: stack columns on narrow screens */
 @media (max-width: 560px) {
   ul.workouts li {
     grid-template-columns: 1fr;
     grid-auto-rows: auto;
   }
-  .fav-btn { justify-self: start; margin-top: 0.5rem; }
+  .fav-btn { 
+    justify-self: start; 
+    margin-top: 0.5rem; 
+  }
 }
 
 .fav-btn:hover{ 
@@ -241,7 +249,6 @@ ul.workouts li {
   transform: translateY(-2px); 
 }
 
-/* responsive */
 @media (max-width:640px){
   .exercise-row{ flex-direction:column; align-items:stretch; }
   .fav-btn{ width:44px; height:44px; border-radius:12px; }
