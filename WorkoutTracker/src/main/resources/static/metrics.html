@@ -11,12 +11,12 @@
     <div class="nav-links">
       <a href="tracker.html">Tracker</a>
       <a href="metrics.html" class="active">Metrics</a>
+      <button id="logoutBtn" class="logout-btn">Sign Out</button>
     </div>
   </nav>
 
   <div class="container">
     <h1>Workout Metrics</h1>
-    <button onclick="window.location.href='tracker.html'">Back to Tracker</button>
     <div>
       <img id="chart" src="" alt="Workout Chart" style="width:800px;height:600px;">
     </div>
@@ -30,6 +30,13 @@
       }
 
       loadChart();
+
+      document.getElementById('logoutBtn').addEventListener('click', () => {
+        localStorage.removeItem('user_id');
+        localStorage.removeItem('username');
+        sessionStorage.clear();
+        window.location.href = 'login.html';
+      });
     </script>
   </div>
 </body>

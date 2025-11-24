@@ -61,16 +61,35 @@ body{
   font-weight:700;
   font-size:1.05rem;
 }
-.top-nav .nav-links{ display:flex; gap:0.5rem; }
+.top-nav .nav-links{ 
+  display:flex; 
+  gap:0.5rem;
+  align-items:center;
+}
 .top-nav a{
   color:var(--white);
   text-decoration:none;
   padding:0.45rem 0.8rem;
   border-radius:10px;
   font-weight:600;
+  transition: background 0.12s ease;
 }
 .top-nav a.active,
 .top-nav a:hover{ background:var(--accent); color:var(--dark); }
+.top-nav .logout-btn{
+  background:var(--accent);
+  color:var(--dark);
+  border:none;
+  padding:0.45rem 0.8rem;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  transition: transform 0.08s;
+}
+.top-nav .logout-btn:hover{
+  transform:translateY(-2px);
+  background:var(--accent);
+}
 
 /* headings */
 h1{
