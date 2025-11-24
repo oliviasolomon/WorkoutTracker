@@ -41,6 +41,12 @@ body{
   gap: 1.5rem;
 }
 
+/* SUPPORT: ensure nav behaves horizontally even if .container class is present on it */
+.top-nav.container {
+  flex-direction: row;
+  text-align: left;
+}
+
 /* FIXED NAV SECTION */
 .top-nav{
   width:100%;
