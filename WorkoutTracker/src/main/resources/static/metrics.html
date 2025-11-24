@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Workout Metrics</title>
+  <link rel="stylesheet" href="/style.css?v=abc123">
+</head>
+<body>
+  <nav class="top-nav container" role="navigation" aria-label="Main Navigation">
+    <div class="brand">Workout Tracker</div>
+    <div class="nav-links">
+      <a href="tracker.html">Tracker</a>
+      <a href="metrics.html" class="active">Metrics</a>
+    </div>
+  </nav>
+
+  <div class="container">
+    <h1>Workout Metrics</h1>
+    <button onclick="window.location.href='tracker.html'">Back to Tracker</button>
+    <div>
+      <img id="chart" src="" alt="Workout Chart" style="width:800px;height:600px;">
+    </div>
+
+    <script>
+      async function loadChart() {
+        const res = await fetch('/metrics/chart');
+        const blob = await res.blob();
+        const imgUrl = URL.createObjectURL(blob);
+        document.getElementById('chart').src = imgUrl;
+      }
+
+      loadChart();
+    </script>
+  </div>
+</body>
+</html>

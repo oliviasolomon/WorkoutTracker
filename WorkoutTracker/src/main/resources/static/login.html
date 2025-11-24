@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login - Workout Tracker</title>
+  <link rel="stylesheet" href="/style.css?v=abc123">
+</head>
+<body>
+  <h1>Login</h1>
+  <form id="login-form" autocomplete="off">
+    <input type="text" id="username" placeholder="Username" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <button type="submit">Login</button>
+  </form>
+
+  <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+
+  <div id="msg" role="status" aria-live="polite" style="color: red; margin-top:10px;"></div>
+
+  <script>
+    const API_BASE = ''; // set to '' (same origin) or full URL if needed
+    const LOGIN_API  = API_BASE + '/api/auth/login';
+
+    const form = document.getElementById('login-form');
+    const msg = document.getElementById('msg');
+
+    function showMsg(text, color='red') {
+      msg.style.color = color;
+      msg.textContent = text;
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      msg.textContent = '';
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+
+      if (!username || !password) {
+        showMsg('Username and password required.');
+        return;
+      }
+
+      try {
+        const res = await fetch(LOGIN_API, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ username, password })
+        });
+
+        const ct = res.headers.get('Content-Type') || '';
+        let body;
+        if (ct.includes('application/json')) {
+          body = await res.json();
+        } else {
+          body = await res.text();
+        }
+
+        if (res.status === 404) {
+          showMsg('User not found.');
+          return;
+        }
+        if (res.status === 401) {
+          showMsg('Invalid username or password.');
+          return;
+        }
+        if (!res.ok) {
+          // treat 500 or other as friendly message
+          showMsg(typeof body === 'string' ? body : (body?.error || 'Login failed'));
+          return;
+        }
+
+        // success: backend might return JSON with id/username or a simple 'ok' string.
+        if (body && typeof body === 'object') {
+          if (body.id) localStorage.setItem('user_id', String(body.id));
+          localStorage.setItem('username', body.username || username);
+        } else {
+          // server returned text like "ok" — store username so tracker can work in local-mode
+          localStorage.setItem('username', username);
+        }
+
+        // Redirect to tracker
+        window.location.href = 'tracker.html';
+      } catch (err) {
+        console.error(err);
+        showMsg('Network error during login.');
+      }
+    });
+  </script>
+</body>
+</html>
