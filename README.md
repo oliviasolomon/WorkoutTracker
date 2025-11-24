@@ -6,6 +6,8 @@ A Spring Boot web application for tracking and managing workout sessions with me
 
 https://workouttracker-d5wa.onrender.com
 
+> **Note**: The deployed version may not reflect the latest code changes. For the most up-to-date version with recent features (Java 21, navigation bar, etc.), run the application locally using the instructions below.
+
 ## Project Structure
 
 ```
@@ -106,10 +108,6 @@ workouttracker/
    
    The app will be available at `http://localhost:8080`
 
-4. **Access pages**:
-   - Login/Signup: `http://localhost:8080/login.html` or `/signup.html`
-   - Tracker: `http://localhost:8080/tracker.html`
-   - Metrics: `http://localhost:8080/metrics.html`
 
 ### Frontend Testing with Mock API
 
@@ -151,7 +149,3 @@ docker run -p 8080:8080 workout-tracker:latest
 - **Navigation Bar**: Added consistent navigation bar to tracker and metrics pages
 - **Logout Button**: Moved logout button to navigation bar for better UX
 - **Mock API**: Added Flask-based mock API server for frontend development and testing
-
-## License
-
-See LICENSE file for details
