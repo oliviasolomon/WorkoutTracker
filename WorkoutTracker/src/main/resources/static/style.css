@@ -63,6 +63,10 @@ body{
   margin-bottom: 1rem;
 }
 
+/* emergency: ensure horizontal nav even if other rules interfere */
+nav.top-nav, .top-nav { display:flex !important; flex-direction:row !important; align-items:center !important; z-index:9999 !important; min-height:44px !important; }
+
+
 .top-nav .brand{
   color:var(--accent);
   font-weight:700;
