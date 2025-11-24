@@ -1,6 +1,0 @@
-target/
-data/
-*.log
-*.iml
-.idea/
-.DS_Store
