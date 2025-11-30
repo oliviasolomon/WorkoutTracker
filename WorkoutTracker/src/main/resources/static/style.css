@@ -449,6 +449,16 @@ ul.workouts li {
   box-sizing: border-box;
 }
 
+form-group select {
+  color: var(--dark);
+  background: var(--white);
+}
+
+.form-group select option {
+  color: var(--dark);
+  background: var(--white);
+}
+
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
