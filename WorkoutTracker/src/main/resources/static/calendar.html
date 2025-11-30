@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Workout Calendar</title>
+  <link rel="stylesheet" href="/style.css?v=abc123">
+</head>
+<body>
+  <nav class="top-nav container" role="navigation" aria-label="Main Navigation">
+    <div class="brand">Workout Tracker</div>
+    <div class="nav-links">
+      <a href="tracker.html">Tracker</a>
+      <a href="metrics.html">Metrics</a>
+      <a href="calendar.html" class="active">Calendar</a>
+      <button id="logoutBtn" class="logout-btn">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="container calendar-container">
+    <div class="calendar-header">
+      <h2 id="monthYear">November 2025</h2>
+      <div class="calendar-nav">
+        <button id="prevMonth">← Previous</button>
+        <button id="today">Today</button>
+        <button id="nextMonth">Next →</button>
+      </div>
+    </div>
+
+    <div class="weekdays">
+      <div class="weekday">Sunday</div>
+      <div class="weekday">Monday</div>
+      <div class="weekday">Tuesday</div>
+      <div class="weekday">Wednesday</div>
+      <div class="weekday">Thursday</div>
+      <div class="weekday">Friday</div>
+      <div class="weekday">Saturday</div>
+    </div>
+
+    <div class="calendar-days" id="calendarDays"></div>
+  </div>
+
+  <script>
+    const userIdRaw = localStorage.getItem('user_id');
+    const userId = userIdRaw ? parseInt(userIdRaw, 10) : null;
+    const username = localStorage.getItem('username') || null;
+
+    if (!userId && !username) {
+      alert('Please sign up or log in first.');
+      window.location.href = 'signup.html';
+    }
+
+    const API_BASE = '';
+    const WORKOUTS_API = API_BASE + '/api/workouts';
+
+    let currentDate = new Date();
+    let allWorkouts = [];
+
+    // DOM Elements
+    const monthYearEl = document.getElementById('monthYear');
+    const calendarDaysEl = document.getElementById('calendarDays');
+
+    // Navigation buttons
+    document.getElementById('prevMonth').addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() - 1);
+      renderCalendar();
+    });
+
+    document.getElementById('nextMonth').addEventListener('click', () => {
+      currentDate.setMonth(currentDate.getMonth() + 1);
+      renderCalendar();
+    });
+
+    document.getElementById('today').addEventListener('click', () => {
+      currentDate = new Date();
+      renderCalendar();
+    });
+
+    // Fetch all workouts
+    async function fetchWorkouts() {
+      let workouts = [];
+      if (userId) {
+        try {
+          const res = await fetch(`${WORKOUTS_API}?user_id=${encodeURIComponent(userId)}`);
+          if (!res.ok) throw new Error('backend fetch failed');
+          workouts = await res.json();
+          allWorkouts = workouts;
+          renderCalendar();
+          return;
+        } catch (err) {
+          console.warn('Fetching workouts from backend failed, falling back to localStorage:', err);
+        }
+      }
+
+      const localKey = `wt_${username}`;
+      const stored = localStorage.getItem(localKey);
+      workouts = stored ? JSON.parse(stored) : [];
+      allWorkouts = workouts;
+      renderCalendar();
+    }
+
+    function getWorkoutsForDate(date) {
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      return allWorkouts.filter(w => {
+        const workoutDate = new Date(w.createdAt || 0).toISOString().split('T')[0];
+        return workoutDate === dateStr;
+      });
+    }
+
+    function renderCalendar() {
+      const year = currentDate.getFullYear();
+      const month = currentDate.getMonth();
+
+      // Update header
+      const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
+      monthYearEl.textContent = monthName;
+
+      // Get first day of month and number of days
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+      // Clear calendar
+      calendarDaysEl.innerHTML = '';
+
+      // Previous month's days
+      for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const dayEl = createDayElement(day, true);
+        calendarDaysEl.appendChild(dayEl);
+      }
+
+      // Current month's days
+      for (let day = 1; day <= daysInMonth; day++) {
+        const date = new Date(year, month, day);
+        const dayEl = createDayElement(day, false, date);
+        calendarDaysEl.appendChild(dayEl);
+      }
+
+      // Next month's days
+      const totalCells = calendarDaysEl.children.length;
+      const remainingCells = 42 - totalCells;
+      for (let day = 1; day <= remainingCells; day++) {
+        const dayEl = createDayElement(day, true);
+        calendarDaysEl.appendChild(dayEl);
+      }
+    }
+
+    function createDayElement(day, isOtherMonth, date = null) {
+      const dayEl = document.createElement('div');
+      dayEl.className = 'day' + (isOtherMonth ? ' other-month' : '');
+
+      const dayNumberEl = document.createElement('div');
+      dayNumberEl.className = 'day-number';
+      dayNumberEl.textContent = day;
+      dayEl.appendChild(dayNumberEl);
+
+      if (!isOtherMonth && date) {
+        const workoutsEl = document.createElement('div');
+        workoutsEl.className = 'day-workouts';
+
+        const workouts = getWorkoutsForDate(date);
+        workouts.slice(0, 2).forEach(w => {
+          const itemEl = document.createElement('div');
+          itemEl.className = 'workout-item';
+          itemEl.title = `${w.exercise || w.exerciseName} - ${w.sets}x${w.reps}`;
+          itemEl.textContent = `${w.exercise || w.exerciseName}`;
+          workoutsEl.appendChild(itemEl);
+        });
+
+        if (workouts.length > 2) {
+          const moreEl = document.createElement('div');
+          moreEl.className = 'workout-item';
+          moreEl.textContent = `+${workouts.length - 2} more`;
+          workoutsEl.appendChild(moreEl);
+        }
+
+        dayEl.appendChild(workoutsEl);
+      }
+
+      return dayEl;
+    }
+
+    // Logout button
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    });
+
+    // Initialize
+    fetchWorkouts();
+  </script>
+</body>
+</html>

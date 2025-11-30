@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Workout Metrics</title>
+  <link rel="stylesheet" href="/style.css?v=abc123">
+</head>
+<body>
+  <h1>Workout Metrics</h1>
+  <button onclick="window.location.href='tracker.html'">Back to Tracker</button>
+  <div>
+    <img id="chart" src="" alt="Workout Chart" style="width:800px;height:600px;">
+  </div>
+
+  <script>
+    async function loadChart() {
+      const res = await fetch('/metrics/chart');
+      const blob = await res.blob();
+      const imgUrl = URL.createObjectURL(blob);
+      document.getElementById('chart').src = imgUrl;
+    }
+
+    loadChart();
+  </script>
+</body>
+</html>
