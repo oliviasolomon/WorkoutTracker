@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Workout Tracker</title>
+  <title>Workout Tracker - Home</title>
   <link rel="stylesheet" href="/style.css?v=abc123">
   <style>
     .favorite {
@@ -22,13 +22,50 @@
     .fav-btn:hover {
       transform: scale(1.2);
     }
+    .add-workout-link {
+      display: inline-block;
+      margin-bottom: 2rem;
+      padding: 1rem 2rem;
+      background: var(--accent);
+      color: var(--dark);
+      text-decoration: none;
+      border-radius: 12px;
+      font-weight: 600;
+      transition: transform 0.2s ease;
+    }
+    .add-workout-link:hover {
+      transform: translateY(-2px);
+    }
+    .controls {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 1rem;
+      border-radius: 12px;
+    }
+    .controls > div {
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .controls label {
+      font-weight: 600;
+      color: var(--white);
+    }
+    .controls select {
+      flex: 1;
+      min-width: 200px;
+    }
   </style>
 </head>
 <body>
   <nav class="top-nav container" role="navigation" aria-label="Main Navigation">
     <div class="brand">Workout Tracker</div>
     <div class="nav-links">
-      <a href="tracker.html" class="active">Tracker</a>
+      <a href="home.html" class="active">Home</a>
       <a href="metrics.html">Metrics</a>
       <a href="calendar.html">Calendar</a>
       <button id="logoutBtn" class="logout-btn">Sign Out</button>
@@ -36,42 +73,36 @@
   </nav>
 
   <div class="container">
-    <h1>Workout Tracker</h1>
+    <h1>Your Workouts</h1>
 
-  <form id="workout-form">
-    <select id="exercise" required>
-      <option value="">Select Exercise</option>
-    </select>
-    <input id="sets" type="number" placeholder="Sets" required min="1" />
-    <input id="reps" type="number" placeholder="Reps" required min="1" />
-    <input id="weight" type="number" placeholder="Weight (lbs)" />
-    <button type="submit">Add Workout</button>
-  </form>
+    <a href="calendar.html" class="add-workout-link">+ Add Workout via Calendar</a>
 
-  <h2>Your Workouts</h2>
-  <div class="controls">
-    <label for="sortBy">Sort by:</label>
-    <select id="sortBy">
-      <option value="">Default (Original Order)</option>
-      <option value="exercise">Exercise Name (A–Z)</option>
-      <option value="sets">Sets (High → Low)</option>
-      <option value="reps">Reps (High → Low)</option>
-      <option value="weight">Weight (High → Low)</option>
-      <option value="date">Date (Newest → Oldest)</option>
-    </select>
+    <div class="controls">
+      <div>
+        <label for="sortBy">Sort by:</label>
+        <select id="sortBy">
+          <option value="">Default (Original Order)</option>
+          <option value="exercise">Exercise Name (A–Z)</option>
+          <option value="sets">Sets (High → Low)</option>
+          <option value="reps">Reps (High → Low)</option>
+          <option value="weight">Weight (High → Low)</option>
+          <option value="date">Date (Newest → Oldest)</option>
+        </select>
+      </div>
 
-    <label for="filterExercise">Filter by exercise:</label>
-    <select id="filterExercise">
-      <option value="">All</option>
-    </select>
+      <div>
+        <label for="filterExercise">Filter by exercise:</label>
+        <select id="filterExercise">
+          <option value="">All Exercises</option>
+        </select>
+      </div>
+    </div>
+
+    <ul id="workouts-list"></ul>
   </div>
-
-  <ul id="workouts-list"></ul>
 
   <script>
     const workoutsList = document.getElementById('workouts-list');
-    const form = document.getElementById('workout-form');
-    const exerciseSelect = document.getElementById('exercise');
 
     const userIdRaw = localStorage.getItem('user_id');
     const userId = userIdRaw ? parseInt(userIdRaw, 10) : null;
@@ -83,11 +114,7 @@
     }
 
     const API_BASE = '';
-    const EXERCISES_API = API_BASE + '/api/exercises';
     const WORKOUTS_API = API_BASE + '/api/workouts';
-    const DEFAULT_EXERCISES = [
-      'Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Pull Ups', 'Barbell Row', 'Leg Press'
-    ];
 
     let allWorkouts = [];
 
@@ -118,28 +145,6 @@
       return workouts.filter(w => (w.exerciseName || w.exercise) === exerciseFilter);
     }
 
-    async function loadExercises() {
-      try {
-        const res = await fetch(EXERCISES_API);
-        if (!res.ok) throw new Error('no exercises endpoint');
-        const exercises = await res.json();
-        populateExercises(Array.isArray(exercises) && exercises.length ? exercises : DEFAULT_EXERCISES);
-      } catch (err) {
-        console.warn('loadExercises failed, using defaults:', err);
-        populateExercises(DEFAULT_EXERCISES);
-      }
-    }
-
-    function populateExercises(exList) {
-      exerciseSelect.innerHTML = '<option value="">Select Exercise</option>';
-      exList.forEach(ex => {
-        const opt = document.createElement('option');
-        opt.value = ex;
-        opt.textContent = ex;
-        exerciseSelect.appendChild(opt);
-      });
-    }
-
     async function fetchWorkouts() {
       workoutsList.innerHTML = '';
       let workouts = [];
@@ -150,6 +155,7 @@
           workouts = await res.json();
           workouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
           allWorkouts = workouts;
+          populateFilterSelect();
           renderWorkouts(workouts);
           return;
         } catch (err) {
@@ -161,13 +167,26 @@
       const stored = localStorage.getItem(localKey);
       workouts = stored ? JSON.parse(stored) : [];
       allWorkouts = workouts;
+      populateFilterSelect();
       renderWorkouts(workouts);
+    }
+
+    function populateFilterSelect() {
+      const filterSelect = document.getElementById('filterExercise');
+      const exercises = [...new Set(allWorkouts.map(w => w.exerciseName || w.exercise))].filter(Boolean).sort();
+      filterSelect.innerHTML = '<option value="">All Exercises</option>';
+      exercises.forEach(ex => {
+        const opt = document.createElement('option');
+        opt.value = ex;
+        opt.textContent = ex;
+        filterSelect.appendChild(opt);
+      });
     }
 
     function renderWorkouts(workouts) {
       workoutsList.innerHTML = '';
       if (!Array.isArray(workouts) || workouts.length === 0) {
-        workoutsList.innerHTML = '<li>No workouts yet.</li>';
+        workoutsList.innerHTML = '<li>No workouts yet. <a href="calendar.html">Add one via calendar</a></li>';
         return;
       }
 
@@ -199,92 +218,9 @@
           const w = allWorkouts.find(w => w.id == id);
           if (w) w.favorite = !w.favorite;
           allWorkouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
-          renderWorkouts(allWorkouts);
+          updateDisplayedWorkouts();
         });
       });
-    }
-
-    // Add new workout
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const exercise = exerciseSelect.value;
-      const sets = parseInt(document.getElementById('sets').value, 10);
-      const reps = parseInt(document.getElementById('reps').value, 10);
-      const weightRaw = document.getElementById('weight').value;
-      const weight = weightRaw ? parseFloat(weightRaw) : null;
-
-      if (!exercise) {
-        alert('Please select an exercise.');
-        return;
-      }
-
-      const payload = {
-        user_id: userId,
-        username: username,
-        exercise: exercise,
-        sets: sets,
-        reps: reps,
-        weight: weight
-      };
-
-      if (userId) {
-        try {
-          const res = await fetch(WORKOUTS_API, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-          });
-
-          const saved = await (res.headers.get('Content-Type')?.includes('application/json') ? res.json() : res.text());
-
-          if (!res.ok) {
-            console.error('Backend rejected workout:', saved);
-            alert(saved?.error || saved || 'Failed to save workout to server');
-            return;
-          }
-
-          const savedWorkout = saved && typeof saved === 'object' ? saved : {
-            exerciseName: exercise,
-            sets, reps, weight
-          };
-
-          appendWorkoutToList(savedWorkout);
-          sessionStorage.setItem('lastWorkout', JSON.stringify(savedWorkout));
-          form.reset();
-          window.location.href = 'confirmation.html';
-          return;
-        } catch (err) {
-          console.warn('POST to backend failed, falling back to local save:', err);
-        }
-      }
-
-      const localKey = `wt_${username}`;
-      const stored = localStorage.getItem(localKey);
-      const arr = stored ? JSON.parse(stored) : [];
-
-      const localSaved = {
-        exerciseName: exercise,
-        sets, reps, weight,
-        createdAt: new Date().toISOString()
-      };
-      arr.push(localSaved);
-      localStorage.setItem(localKey, JSON.stringify(arr));
-
-      appendWorkoutToList(localSaved);
-      sessionStorage.setItem('lastWorkout', JSON.stringify(localSaved));
-      form.reset();
-      window.location.href = 'confirmation.html';
-    });
-
-    function appendWorkoutToList(w) {
-      if (workoutsList.children.length === 1 && workoutsList.children[0].textContent.includes('No workouts yet')) {
-        workoutsList.innerHTML = '';
-      }
-      const li = document.createElement('li');
-      const name = w.exerciseName || w.exercise || 'Unknown Exercise';
-      li.textContent = `${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}`;
-      workoutsList.appendChild(li);
     }
 
     const sortSelect = document.getElementById('sortBy');
@@ -301,7 +237,6 @@
       renderWorkouts(sorted);
     }
 
-    loadExercises();
     fetchWorkouts();
 
     sortSelect.value = '';
@@ -314,6 +249,5 @@
       window.location.href = 'login.html';
     });
   </script>
-  </div>
 </body>
 </html>
