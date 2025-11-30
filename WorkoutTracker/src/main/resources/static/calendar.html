@@ -39,6 +39,50 @@
     <div class="calendar-days" id="calendarDays"></div>
   </div>
 
+  <!-- Workout Modal -->
+  <div class="modal" id="workoutModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalDate">Add Workout</h3>
+        <button class="close-btn" id="closeModal">&times;</button>
+      </div>
+
+      <form id="workoutForm">
+        <div class="form-group">
+          <label for="exercise">Exercise</label>
+          <select id="exercise" required>
+            <option value="">Select Exercise</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="sets">Sets</label>
+          <input type="number" id="sets" placeholder="e.g., 3" required min="1" />
+        </div>
+
+        <div class="form-group">
+          <label for="reps">Reps</label>
+          <input type="number" id="reps" placeholder="e.g., 10" required min="1" />
+        </div>
+
+        <div class="form-group">
+          <label for="weight">Weight (lbs)</label>
+          <input type="number" id="weight" placeholder="Optional" step="0.5" />
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notes</label>
+          <textarea id="notes" placeholder="Add any notes about this workout..."></textarea>
+        </div>
+
+        <div class="modal-actions">
+          <button type="submit" class="btn-save">Add Workout</button>
+          <button type="button" class="btn-cancel" id="cancelBtn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const userIdRaw = localStorage.getItem('user_id');
     const userId = userIdRaw ? parseInt(userIdRaw, 10) : null;
@@ -50,14 +94,25 @@
     }
 
     const API_BASE = '';
+    const EXERCISES_API = API_BASE + '/api/exercises';
     const WORKOUTS_API = API_BASE + '/api/workouts';
+    const DEFAULT_EXERCISES = [
+      'Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Pull Ups', 'Barbell Row', 'Leg Press'
+    ];
 
     let currentDate = new Date();
+    let selectedDate = null;
     let allWorkouts = [];
 
     // DOM Elements
     const monthYearEl = document.getElementById('monthYear');
     const calendarDaysEl = document.getElementById('calendarDays');
+    const workoutModal = document.getElementById('workoutModal');
+    const modalDateEl = document.getElementById('modalDate');
+    const workoutForm = document.getElementById('workoutForm');
+    const exerciseSelect = document.getElementById('exercise');
+    const closeModalBtn = document.getElementById('closeModal');
+    const cancelBtn = document.getElementById('cancelBtn');
 
     // Navigation buttons
     document.getElementById('prevMonth').addEventListener('click', () => {
@@ -74,6 +129,39 @@
       currentDate = new Date();
       renderCalendar();
     });
+
+    // Modal controls
+    closeModalBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    workoutModal.addEventListener('click', (e) => {
+      if (e.target === workoutModal) {
+        closeModal();
+      }
+    });
+
+    // Load exercises on page load
+    async function loadExercises() {
+      try {
+        const res = await fetch(EXERCISES_API);
+        if (!res.ok) throw new Error('no exercises endpoint');
+        const exercises = await res.json();
+        populateExercises(Array.isArray(exercises) && exercises.length ? exercises : DEFAULT_EXERCISES);
+      } catch (err) {
+        console.warn('loadExercises failed, using defaults:', err);
+        populateExercises(DEFAULT_EXERCISES);
+      }
+    }
+
+    function populateExercises(exList) {
+      exerciseSelect.innerHTML = '<option value="">Select Exercise</option>';
+      exList.forEach(ex => {
+        const opt = document.createElement('option');
+        opt.value = ex;
+        opt.textContent = ex;
+        exerciseSelect.appendChild(opt);
+      });
+    }
 
     // Fetch all workouts
     async function fetchWorkouts() {
@@ -175,10 +263,86 @@
         }
 
         dayEl.appendChild(workoutsEl);
+
+        dayEl.addEventListener('click', () => openModal(date));
       }
 
       return dayEl;
     }
+
+    function openModal(date) {
+      selectedDate = date;
+      const dateStr = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+      modalDateEl.textContent = `Add Workout - ${dateStr}`;
+      workoutForm.reset();
+      workoutModal.classList.add('active');
+    }
+
+    function closeModal() {
+      workoutModal.classList.remove('active');
+      selectedDate = null;
+    }
+
+    // Handle form submission
+    workoutForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const exercise = exerciseSelect.value;
+      const sets = parseInt(document.getElementById('sets').value, 10);
+      const reps = parseInt(document.getElementById('reps').value, 10);
+      const weightRaw = document.getElementById('weight').value;
+      const weight = weightRaw ? parseFloat(weightRaw) : null;
+      const notes = document.getElementById('notes').value;
+
+      if (!exercise || !selectedDate) {
+        alert('Please select an exercise.');
+        return;
+      }
+
+      const payload = {
+        user_id: userId,
+        username: username,
+        exercise: exercise,
+        sets: sets,
+        reps: reps,
+        weight: weight,
+        notes: notes,
+        createdAt: selectedDate.toISOString()
+      };
+
+      if (userId) {
+        try {
+          const res = await fetch(WORKOUTS_API, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (!res.ok) {
+            const error = await (res.headers.get('Content-Type')?.includes('application/json') ? res.json() : res.text());
+            alert(error?.error || error || 'Failed to save workout');
+            return;
+          }
+
+          const saved = await (res.headers.get('Content-Type')?.includes('application/json') ? res.json() : res.text());
+          allWorkouts.push(saved || payload);
+        } catch (err) {
+          console.warn('POST to backend failed, falling back to localStorage:', err);
+          allWorkouts.push(payload);
+        }
+      } else {
+        const localKey = `wt_${username}`;
+        const stored = localStorage.getItem(localKey);
+        const arr = stored ? JSON.parse(stored) : [];
+        arr.push(payload);
+        localStorage.setItem(localKey, JSON.stringify(arr));
+        allWorkouts.push(payload);
+      }
+
+      renderCalendar();
+      closeModal();
+      alert('Workout added successfully!');
+    });
 
     // Logout button
     document.getElementById('logoutBtn').addEventListener('click', () => {
@@ -189,6 +353,7 @@
     });
 
     // Initialize
+    loadExercises();
     fetchWorkouts();
   </script>
 </body>
