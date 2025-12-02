@@ -97,7 +97,7 @@
 
     const API_BASE = '';
     const EXERCISES_API = API_BASE + '/api/exercises';
-    const WORKOUTS_API = API_BASE + '/api/workouts';
+    const WORKOUTS_API = API_BASE + '/api/logs';
     const DEFAULT_EXERCISES = [
       'Bench Press', 'Squat', 'Deadlift', 'Overhead Press', 'Pull Ups', 'Barbell Row', 'Leg Press'
     ];
@@ -165,7 +165,7 @@
       });
     }
 
-    // Fetch all workouts
+    // Fetch all logs
     async function fetchWorkouts() {
       let workouts = [];
       if (userId) {
@@ -191,44 +191,36 @@
     function getWorkoutsForDate(date) {
       const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
       return allWorkouts.filter(w => {
-        const workoutDate = new Date(w.createdAt || 0).toISOString().split('T')[0];
+        const workoutDate = new Date(w.createdAt || w.date || 0).toISOString().split('T')[0];
         return workoutDate === dateStr;
       });
     }
 
-    
-
     function renderCalendar() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
-
-      // Update header
+// Update header
       const monthName = currentDate.toLocaleString('default', { month: 'long', year: 'numeric' });
       monthYearEl.textContent = monthName;
-
-      // Get first day of month and number of days
+// Get first day of month and number of days
       const firstDay = new Date(year, month, 1).getDay();
       const daysInMonth = new Date(year, month + 1, 0).getDate();
       const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-      // Clear calendar
+// Clear calendar
       calendarDaysEl.innerHTML = '';
-
       // Previous month's days
       for (let i = firstDay - 1; i >= 0; i--) {
         const day = daysInPrevMonth - i;
         const dayEl = createDayElement(day, true);
         calendarDaysEl.appendChild(dayEl);
       }
-
-      // Current month's days
+// Current month's days
       for (let day = 1; day <= daysInMonth; day++) {
         const date = new Date(year, month, day);
         const dayEl = createDayElement(day, false, date);
         calendarDaysEl.appendChild(dayEl);
       }
-
-      // Next month's days
+// Next month's days
       const totalCells = calendarDaysEl.children.length;
       const remainingCells = 42 - totalCells;
       for (let day = 1; day <= remainingCells; day++) {
@@ -286,8 +278,7 @@
       workoutModal.classList.remove('active');
       selectedDate = null;
     }
-
-    // If a ?focus=<ISO date> query param exists, navigate to that date and open modal
+// If a ?focus=<ISO date> query param exists, navigate to that date and open modal
     function processFocusFromQuery() {
       try {
         const params = new URLSearchParams(window.location.search);
@@ -297,7 +288,7 @@
         if (isNaN(d.getTime())) return;
         currentDate = new Date(d.getFullYear(), d.getMonth(), 1);
         renderCalendar();
-        // open modal for that day after render
+              // open modal for that day after render
         setTimeout(() => openModal(new Date(d.getFullYear(), d.getMonth(), d.getDate())), 80);
       } catch (err) {
         console.warn('processFocusFromQuery error', err);
@@ -327,8 +318,10 @@
         sets: sets,
         reps: reps,
         weight: weight,
+        units: 'lbs',
+        muscle_group: null,
         notes: notes,
-        createdAt: selectedDate.toISOString()
+        date: selectedDate.toISOString()
       };
 
       if (userId) {
