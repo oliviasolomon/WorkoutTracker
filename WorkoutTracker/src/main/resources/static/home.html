@@ -5,60 +5,15 @@
   <title>Workout Tracker - Home</title>
   <link rel="stylesheet" href="/style.css?v=abc123">
   <style>
-    .favorite {
-      border: 2px solid gold;
-      background-color: #fffbe6;
-      border-radius: 6px;
-      padding: 6px 10px;
-      margin-bottom: 5px;
-    }
-    .fav-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-size: 1.3em;
-      margin-left: 10px;
-    }
-    .fav-btn:hover {
-      transform: scale(1.2);
-    }
-    .add-workout-link {
-      display: inline-block;
-      margin-bottom: 2rem;
-      padding: 1rem 2rem;
-      background: var(--accent);
-      color: var(--dark);
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 600;
-      transition: transform 0.2s ease;
-    }
-    .add-workout-link:hover {
-      transform: translateY(-2px);
-    }
-    .controls {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      margin-bottom: 2rem;
-      background: rgba(255, 255, 255, 0.02);
-      padding: 1rem;
-      border-radius: 12px;
-    }
-    .controls > div {
-      display: flex;
-      gap: 1rem;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-    .controls label {
-      font-weight: 600;
-      color: var(--white);
-    }
-    .controls select {
-      flex: 1;
-      min-width: 200px;
-    }
+    .favorite { border: 2px solid gold; background-color: #fffbe6; border-radius: 6px; padding: 6px 10px; margin-bottom: 5px; }
+    .fav-btn { background: none; border: none; cursor: pointer; font-size: 1.3em; margin-left: 10px; }
+    .fav-btn:hover { transform: scale(1.2); }
+    .add-workout-link { display: inline-block; margin-bottom: 2rem; padding: 1rem 2rem; background: var(--accent); color: var(--dark); text-decoration: none; border-radius: 12px; font-weight: 600; transition: transform 0.2s ease; }
+    .add-workout-link:hover { transform: translateY(-2px); }
+    .controls { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2rem; background: rgba(255, 255, 255, 0.02); padding: 1rem; border-radius: 12px; }
+    .controls > div { display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    .controls label { font-weight: 600; color: var(--white); }
+    .controls select { flex: 1; min-width: 200px; }
   </style>
 </head>
 <body>
@@ -143,7 +98,7 @@
     }
 
     const API_BASE = '';
-    const WORKOUTS_API = API_BASE + '/api/workouts';
+    const WORKOUTS_API = API_BASE + '/api/logs';
 
     let allWorkouts = [];
 
@@ -163,7 +118,7 @@
           sorted.sort((a, b) => (b.weight || 0) - (a.weight || 0));
           break;
         case 'date':
-          sorted.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+          sorted.sort((a, b) => new Date(b.createdAt || b.date || 0) - new Date(a.createdAt || a.date || 0));
           break;
       }
       return sorted;
@@ -226,8 +181,8 @@
 
     function computeMetrics() {
       const total = (allWorkouts || []).length;
-      const last7 = (allWorkouts || []).filter(w => new Date(w.createdAt || 0) >= startOfDayOffset(7)).length;
-      const last30 = (allWorkouts || []).filter(w => new Date(w.createdAt || 0) >= startOfDayOffset(30)).length;
+      const last7 = (allWorkouts || []).filter(w => new Date(w.createdAt || w.date || 0) >= startOfDayOffset(7)).length;
+      const last30 = (allWorkouts || []).filter(w => new Date(w.createdAt || w.date || 0) >= startOfDayOffset(30)).length;
       return { total, last7, last30 };
     }
 
@@ -238,7 +193,7 @@
       document.getElementById('cardTotal').textContent = cards.total;
     }
 
-    // UPCOMING SIDEBAR FUNCTIONS (moved from calendar page)
+    // UPCOMING SIDEBAR FUNCTIONS
     function startOfToday() {
       const d = new Date();
       return new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -285,9 +240,9 @@
         openBtn.type = 'button';
         openBtn.textContent = 'View';
         openBtn.addEventListener('click', (e) => {
-          // navigate calendar to the workout's month and highlight the day
+          //navigate calendar to the workout's month and highlight the day
           currentDate = new Date(date.getFullYear(), date.getMonth(), 1);
-          // If calendar exists in separate page, open calendar in new tab
+          //if calendar exists in separate page, open calendar in new tab
           if (window.location.pathname.endsWith('calendar.html')) {
             renderCalendar();
             setTimeout(() => {
@@ -299,7 +254,7 @@
               if (candidates.length) { const el = candidates[0]; el.classList.add('highlight'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
             }, 60);
           } else {
-            // open calendar page and let user view there
+            //open calendar page and let user view there
             window.location.href = 'calendar.html';
           }
         });
@@ -309,9 +264,9 @@
         addBtn.textContent = 'Add';
         addBtn.style.marginLeft = '0.45rem';
         addBtn.addEventListener('click', () => {
-          // Open calendar page on the selected date
+          //open calendar page on the selected date
           const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-          // encode date in query so calendar can open modal for that day
+          //encode date in query so calendar can open modal for that day
           const q = `?focus=${d.toISOString()}`;
           window.location.href = 'calendar.html' + q;
         });
@@ -346,7 +301,7 @@
         const meta = document.createElement('div');
         meta.className = 'meta';
         const when = w.createdAt ? new Date(w.createdAt) : (w.date ? new Date(w.date) : null);
-        meta.textContent = `${w.sets}×${w.reps}${w.weight ? ` • ${w.weight} lbs` : ''}${when ? ' • ' + when.toLocaleString() : ''}`;
+        meta.textContent = `${w.sets}×${w.reps}${w.weight ? ` • ${w.weight} ${w.units || 'lbs'}` : ''}${when ? ' • ' + when.toLocaleString() : ''}`;
         left.appendChild(title);
         left.appendChild(meta);
 
@@ -364,13 +319,13 @@
         workoutsList.appendChild(li);
       });
 
-      // Add click listeners for favorite buttons
+      //add click listeners for favorite buttons
       document.querySelectorAll('.fav-btn').forEach(btn => {
         btn.addEventListener('click', async (e) => {
           const id = e.target.getAttribute('data-id');
 
           try {
-            await fetch(`/workouts/${id}/favorite`, { method: 'POST' });
+            await fetch(`/api/logs/${id}/favorite`, { method: 'POST' });
           } catch (err) {
             console.warn('Failed to update favorite on backend:', err);
           }
@@ -411,8 +366,7 @@
       sessionStorage.clear();
       window.location.href = 'login.html';
     });
-
-    // small add workout button navigates to calendar (focus modal available there)
+//small add workout button navigates to calendar (focus modal available there)
     const addWorkoutBtn = document.getElementById('addWorkoutBtn');
     if (addWorkoutBtn) {
       addWorkoutBtn.addEventListener('click', () => {
