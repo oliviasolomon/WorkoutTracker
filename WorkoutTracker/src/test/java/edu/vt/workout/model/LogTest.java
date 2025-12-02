@@ -17,13 +17,12 @@ public class LogTest {
 
         // By default everything should be null until we set it
         assertNull(log.getId());
-        assertNull(log.getWorkoutId());
         assertNull(log.getUserId());
         assertNull(log.getSets());
         assertNull(log.getReps());
         assertNull(log.getWeight());
         assertNull(log.getDate());
-        assertNull(log.getWorkout());
+        assertNull(log.getExerciseName());
     }
 
     @Test
@@ -31,40 +30,36 @@ public class LogTest {
         Log log = new Log();
 
         Long id = 1L;
-        Long workoutId = 10L;
         Long userId = 42L;
         Integer sets = 4;
         Integer reps = 12;
         Double weight = 135.0;
         LocalDateTime date = LocalDateTime.of(2025, 11, 1, 14, 30);
+        String exerciseName = "Bench Press";
 
         log.setId(id);
-        log.setWorkoutId(workoutId);
         log.setUserId(userId);
         log.setSets(sets);
         log.setReps(reps);
         log.setWeight(weight);
         log.setDate(date);
+        log.setExerciseName(exerciseName);
 
         assertEquals(id, log.getId());
-        assertEquals(workoutId, log.getWorkoutId());
         assertEquals(userId, log.getUserId());
         assertEquals(sets, log.getSets());
         assertEquals(reps, log.getReps());
         assertEquals(weight, log.getWeight());
         assertEquals(date, log.getDate());
+        assertEquals(exerciseName, log.getExerciseName());
     }
 
     @Test
-    void testWorkoutTransientField() {
+    void testExerciseField() {
         Log log = new Log();
 
-        Workout workout = new Workout();
-        // we don't care about Workout internals here, just that
-        // the reference is stored and returned correctly.
-        log.setWorkout(workout);
-
-        assertSame(workout, log.getWorkout());
+        log.setExerciseName("Squat");
+        assertEquals("Squat", log.getExerciseName());
     }
 
     @Test
@@ -103,4 +98,3 @@ public class LogTest {
         assertEquals(later, log.getDate());
     }
 }
-
