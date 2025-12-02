@@ -1,11 +1,11 @@
 /* green! */
 
 /* import font */
-@import url('https://fonts.googleapis.com/css2?family=Audiowide:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
 
 :root{
   --grey: #484c65;
-  --accent: #b9f755;
+  --accent: #ff5a5f;
   --white: #f4f3ee;
   --dark: #2b2d3b;
   --radius: 12px;
