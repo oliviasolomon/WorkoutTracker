@@ -72,37 +72,66 @@
     </div>
   </nav>
 
-  <div class="container">
-    <h1>Your Workouts</h1>
+  <div class="container calendar-layout">
+    <main class="main-content">
+      <h1>Training Dashboard</h1>
 
-    <a href="calendar.html" class="add-workout-link">+ Add Workout via Calendar</a>
-
-    <div class="controls">
-      <div>
-        <label for="sortBy">Sort by:</label>
-        <select id="sortBy">
-          <option value="">Default (Original Order)</option>
-          <option value="exercise">Exercise Name (A–Z)</option>
-          <option value="sets">Sets (High → Low)</option>
-          <option value="reps">Reps (High → Low)</option>
-          <option value="weight">Weight (High → Low)</option>
-          <option value="date">Date (Newest → Oldest)</option>
-        </select>
+      <div id="progressCards" class="progress-cards" aria-hidden="false">
+        <div class="card">
+          <div class="card-title">Workouts (7d)</div>
+          <div id="card7" class="card-value">—</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Workouts (30d)</div>
+          <div id="card30" class="card-value">—</div>
+        </div>
+        <div class="card">
+          <div class="card-title">Total</div>
+          <div id="cardTotal" class="card-value">—</div>
+        </div>
       </div>
 
-      <div>
-        <label for="filterExercise">Filter by exercise:</label>
-        <select id="filterExercise">
-          <option value="">All Exercises</option>
-        </select>
-      </div>
-    </div>
+      <div class="controls">
+        <div>
+          <label for="sortBy">Sort by:</label>
+          <select id="sortBy">
+            <option value="">Default (Original Order)</option>
+            <option value="exercise">Exercise Name (A–Z)</option>
+            <option value="sets">Sets (High → Low)</option>
+            <option value="reps">Reps (High → Low)</option>
+            <option value="weight">Weight (High → Low)</option>
+            <option value="date">Date (Newest → Oldest)</option>
+          </select>
+        </div>
 
-    <ul id="workouts-list"></ul>
+        <div>
+          <label for="filterExercise">Filter by exercise:</label>
+          <select id="filterExercise">
+            <option value="">All Exercises</option>
+          </select>
+        </div>
+        <div style="display:flex; justify-content:flex-end;">
+          <button id="addWorkoutBtn" class="add-workout-btn">+ Add Workout</button>
+        </div>
+      </div>
+
+      <section class="recent-section">
+        <h2>Recent Workouts</h2>
+        <ul id="recent-list"></ul>
+      </section>
+    </main>
+
+    <aside class="upcoming-sidebar" id="upcomingSidebar" aria-label="Upcoming Workouts">
+      <h3>Upcoming Workouts</h3>
+      <div id="upcomingList" class="upcoming-list">
+        <div class="loading">Loading...</div>
+      </div>
+      <a class="view-all-link" href="home.html">View all workouts</a>
+    </aside>
   </div>
 
   <script>
-    const workoutsList = document.getElementById('workouts-list');
+    const workoutsList = document.getElementById('recent-list');
 
     const userIdRaw = localStorage.getItem('user_id');
     const userId = userIdRaw ? parseInt(userIdRaw, 10) : null;
@@ -157,6 +186,8 @@
           allWorkouts = workouts;
           populateFilterSelect();
           renderWorkouts(workouts);
+          renderUpcomingSidebar();
+          renderProgressSummary();
           return;
         } catch (err) {
           console.warn('Fetching workouts from backend failed, falling back to localStorage:', err);
@@ -169,6 +200,8 @@
       allWorkouts = workouts;
       populateFilterSelect();
       renderWorkouts(workouts);
+      renderUpcomingSidebar();
+      renderProgressSummary();
     }
 
     function populateFilterSelect() {
@@ -183,22 +216,151 @@
       });
     }
 
+    // DASHBOARD METRICS
+    function startOfDayOffset(days) {
+      const d = new Date();
+      d.setHours(0,0,0,0);
+      d.setDate(d.getDate() - days);
+      return d;
+    }
+
+    function computeMetrics() {
+      const total = (allWorkouts || []).length;
+      const last7 = (allWorkouts || []).filter(w => new Date(w.createdAt || 0) >= startOfDayOffset(7)).length;
+      const last30 = (allWorkouts || []).filter(w => new Date(w.createdAt || 0) >= startOfDayOffset(30)).length;
+      return { total, last7, last30 };
+    }
+
+    function renderProgressSummary() {
+      const cards = computeMetrics();
+      document.getElementById('card7').textContent = cards.last7;
+      document.getElementById('card30').textContent = cards.last30;
+      document.getElementById('cardTotal').textContent = cards.total;
+    }
+
+    // UPCOMING SIDEBAR FUNCTIONS (moved from calendar page)
+    function startOfToday() {
+      const d = new Date();
+      return new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    }
+
+    function getUpcomingWorkouts(limit = 6) {
+      const today = startOfToday();
+      return (allWorkouts || [])
+        .map(w => ({ raw: w, date: w.createdAt ? new Date(w.createdAt) : (w.date ? new Date(w.date) : new Date(0)) }))
+        .filter(x => x.date >= today)
+        .sort((a, b) => a.date - b.date)
+        .slice(0, limit)
+        .map(x => x.raw);
+    }
+
+    function renderUpcomingSidebar() {
+      const listEl = document.getElementById('upcomingList');
+      if (!listEl) return;
+      listEl.innerHTML = '';
+      const items = getUpcomingWorkouts(6);
+      if (!items || items.length === 0) {
+        listEl.innerHTML = '<div class="loading">No upcoming workouts found.</div>';
+        return;
+      }
+
+      items.forEach(w => {
+        const date = new Date(w.createdAt || w.date || 0);
+        const item = document.createElement('div');
+        item.className = 'upcoming-item';
+
+        const info = document.createElement('div');
+        info.className = 'meta';
+        const ex = document.createElement('div');
+        ex.className = 'title';
+        ex.textContent = w.exerciseName || w.exercise || 'Workout';
+        const meta = document.createElement('div');
+        meta.className = 'date';
+        meta.textContent = date.toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+        info.appendChild(ex);
+        info.appendChild(meta);
+
+        const actions = document.createElement('div');
+        const openBtn = document.createElement('button');
+        openBtn.type = 'button';
+        openBtn.textContent = 'View';
+        openBtn.addEventListener('click', (e) => {
+          // navigate calendar to the workout's month and highlight the day
+          currentDate = new Date(date.getFullYear(), date.getMonth(), 1);
+          // If calendar exists in separate page, open calendar in new tab
+          if (window.location.pathname.endsWith('calendar.html')) {
+            renderCalendar();
+            setTimeout(() => {
+              const allDayEls = document.querySelectorAll('.day');
+              allDayEls.forEach(el => el.classList.remove('highlight'));
+              const dayIndex = date.getDate();
+              const candidates = Array.from(document.querySelectorAll('.day:not(.other-month)'))
+                .filter(d => d.querySelector('.day-number') && parseInt(d.querySelector('.day-number').textContent, 10) === dayIndex);
+              if (candidates.length) { const el = candidates[0]; el.classList.add('highlight'); el.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+            }, 60);
+          } else {
+            // open calendar page and let user view there
+            window.location.href = 'calendar.html';
+          }
+        });
+
+        const addBtn = document.createElement('button');
+        addBtn.type = 'button';
+        addBtn.textContent = 'Add';
+        addBtn.style.marginLeft = '0.45rem';
+        addBtn.addEventListener('click', () => {
+          // Open calendar page on the selected date
+          const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+          // encode date in query so calendar can open modal for that day
+          const q = `?focus=${d.toISOString()}`;
+          window.location.href = 'calendar.html' + q;
+        });
+
+        actions.appendChild(openBtn);
+        actions.appendChild(addBtn);
+
+        item.appendChild(info);
+        item.appendChild(actions);
+        listEl.appendChild(item);
+      });
+    }
+
     function renderWorkouts(workouts) {
       workoutsList.innerHTML = '';
       if (!Array.isArray(workouts) || workouts.length === 0) {
-        workoutsList.innerHTML = '<li>No workouts yet. <a href="calendar.html">Add one via calendar</a></li>';
+        const li = document.createElement('li');
+        li.innerHTML = 'No workouts yet. <a href="calendar.html">Add one via calendar</a>';
+        workoutsList.appendChild(li);
         return;
       }
 
       workouts.forEach(w => {
         const li = document.createElement('li');
-        li.className = w.favorite ? 'favorite' : '';
-        const name = w.exerciseName || w.exercise || 'Unknown Exercise';
-        const favIcon = w.favorite ? '⭐' : '☆';
-        li.innerHTML = `
-          ${w.favorite ? '⭐' : ''}${name} - ${w.sets} sets x ${w.reps} reps${w.weight ? ` - ${w.weight} lbs` : ''}
-          <button class="fav-btn" data-id="${w.id}" title="Toggle Favorite">${favIcon}</button>
-        `;
+        li.className = 'recent-item-card' + (w.favorite ? ' favorite' : '');
+
+        const left = document.createElement('div');
+        left.className = 'left';
+        const title = document.createElement('div');
+        title.className = 'title';
+        title.textContent = w.exerciseName || w.exercise || 'Unknown Exercise';
+        const meta = document.createElement('div');
+        meta.className = 'meta';
+        const when = w.createdAt ? new Date(w.createdAt) : (w.date ? new Date(w.date) : null);
+        meta.textContent = `${w.sets}×${w.reps}${w.weight ? ` • ${w.weight} lbs` : ''}${when ? ' • ' + when.toLocaleString() : ''}`;
+        left.appendChild(title);
+        left.appendChild(meta);
+
+        const actions = document.createElement('div');
+        actions.className = 'actions';
+        const favBtn = document.createElement('button');
+        favBtn.className = 'fav-btn';
+        favBtn.setAttribute('data-id', w.id || '');
+        favBtn.title = 'Toggle Favorite';
+        favBtn.textContent = w.favorite ? '⭐' : '☆';
+        actions.appendChild(favBtn);
+
+        li.appendChild(left);
+        li.appendChild(actions);
         workoutsList.appendChild(li);
       });
 
@@ -219,6 +381,7 @@
           if (w) w.favorite = !w.favorite;
           allWorkouts.sort((a, b) => (b.favorite === true) - (a.favorite === true));
           updateDisplayedWorkouts();
+          renderProgressSummary();
         });
       });
     }
@@ -248,6 +411,14 @@
       sessionStorage.clear();
       window.location.href = 'login.html';
     });
+
+    // small add workout button navigates to calendar (focus modal available there)
+    const addWorkoutBtn = document.getElementById('addWorkoutBtn');
+    if (addWorkoutBtn) {
+      addWorkoutBtn.addEventListener('click', () => {
+        window.location.href = 'calendar.html';
+      });
+    }
   </script>
 </body>
 </html>

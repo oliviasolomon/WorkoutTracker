@@ -16,8 +16,9 @@
     </div>
   </nav>
 
-  <div class="container calendar-container">
-    <div class="calendar-header">
+  <div class="container calendar-layout">
+    <div class="calendar-container">
+      <div class="calendar-header">
       <h2 id="monthYear">November 2025</h2>
       <div class="calendar-nav">
         <button id="prevMonth">← Previous</button>
@@ -36,8 +37,9 @@
       <div class="weekday">Saturday</div>
     </div>
 
-    <div class="calendar-days" id="calendarDays"></div>
-  </div>
+      <div class="calendar-days" id="calendarDays"></div>
+      </div>
+    </div>
 
   <!-- Workout Modal -->
   <div class="modal" id="workoutModal">
@@ -194,6 +196,8 @@
       });
     }
 
+    
+
     function renderCalendar() {
       const year = currentDate.getFullYear();
       const month = currentDate.getMonth();
@@ -283,6 +287,23 @@
       selectedDate = null;
     }
 
+    // If a ?focus=<ISO date> query param exists, navigate to that date and open modal
+    function processFocusFromQuery() {
+      try {
+        const params = new URLSearchParams(window.location.search);
+        const focus = params.get('focus');
+        if (!focus) return;
+        const d = new Date(focus);
+        if (isNaN(d.getTime())) return;
+        currentDate = new Date(d.getFullYear(), d.getMonth(), 1);
+        renderCalendar();
+        // open modal for that day after render
+        setTimeout(() => openModal(new Date(d.getFullYear(), d.getMonth(), d.getDate())), 80);
+      } catch (err) {
+        console.warn('processFocusFromQuery error', err);
+      }
+    }
+
     // Handle form submission
     workoutForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -354,7 +375,7 @@
 
     // Initialize
     loadExercises();
-    fetchWorkouts();
+    fetchWorkouts().then(() => processFocusFromQuery());
   </script>
 </body>
 </html>
