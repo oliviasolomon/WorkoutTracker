@@ -126,7 +126,7 @@
           // server returned JSON with id/username — store and redirect
           localStorage.setItem('user_id', String(body.id));
           localStorage.setItem('username', body.username || username);
-          window.location.href = 'tracker.html';
+          window.location.href = 'home.html';
           return;
         }
 
@@ -134,7 +134,7 @@
         // attempt to login automatically to fetch a user id or at least ensure credentials work.
         const autoLoginOk = await attemptLoginAfterSignup(username, password);
         if (autoLoginOk) {
-          window.location.href = 'tracker.html';
+          window.location.href = 'home.html';
         } else {
           showMsg('Signup succeeded but auto-login failed — please login manually.');
         }
