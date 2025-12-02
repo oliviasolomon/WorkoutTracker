@@ -1,7 +1,6 @@
 package edu.vt.workout.controller;
 
 import edu.vt.workout.model.Log;
-import edu.vt.workout.model.Workout;
 import edu.vt.workout.repo.LogRowMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -103,29 +102,23 @@ public class LogControllerTest {
         return new LogController(fake);
     }
 
-    private Log sampleLog(long id, long workoutId, long userId) {
+    private Log sampleLog(long id, long userId, String exerciseName) {
         Log l = new Log();
         l.setId(id);
-        l.setWorkoutId(workoutId);
         l.setUserId(userId);
         l.setSets(3);
         l.setReps(10);
         l.setWeight(135.0);
         l.setDate(LocalDateTime.now());
-        Workout w = new Workout();
-        w.setId(workoutId);
-        w.setUserId(userId);
-        w.setExerciseName("Bench Press");
-        w.setMuscleGroup("Chest");
-        l.setWorkout(w);
+        l.setExerciseName(exerciseName);
         return l;
     }
 
     @Test
     public void testListAllWithoutUserId() {
         FakeJdbcTemplate fake = new FakeJdbcTemplate();
-        Log l1 = sampleLog(1L, 10L, 100L);
-        Log l2 = sampleLog(2L, 11L, 101L);
+        Log l1 = sampleLog(1L, 100L, "Bench Press");
+        Log l2 = sampleLog(2L, 101L, "Squat");
         fake.logsForAll = Arrays.asList(l1, l2);
 
         LogController controller = newControllerWithFake(fake);
@@ -140,7 +133,7 @@ public class LogControllerTest {
     @Test
     public void testListFilteredByUserId() {
         FakeJdbcTemplate fake = new FakeJdbcTemplate();
-        Log l1 = sampleLog(1L, 10L, 42L);
+        Log l1 = sampleLog(1L, 42L, "Deadlift");
         fake.logsForUser = Collections.singletonList(l1);
 
         LogController controller = newControllerWithFake(fake);
@@ -154,7 +147,7 @@ public class LogControllerTest {
     @Test
     public void testGetOneFound() {
         FakeJdbcTemplate fake = new FakeJdbcTemplate();
-        Log l = sampleLog(5L, 20L, 7L);
+        Log l = sampleLog(5L, 7L, "Overhead Press");
         fake.logForGetOne = l;
 
         LogController controller = newControllerWithFake(fake);
@@ -180,7 +173,7 @@ public class LogControllerTest {
     }
 
     @Test
-    public void testCreateMissingWorkoutIdReturnsBadRequest() {
+    public void testCreateMissingExerciseReturnsBadRequest() {
         FakeJdbcTemplate fake = new FakeJdbcTemplate();
         LogController controller = newControllerWithFake(fake);
 
@@ -193,7 +186,7 @@ public class LogControllerTest {
         assertEquals(400, resp.getStatusCodeValue());
         assertTrue(resp.getBody() instanceof Map);
         Map<?,?> respBody = (Map<?,?>) resp.getBody();
-        assertEquals("workout_id required", respBody.get("error"));
+        assertEquals("invalid input", respBody.get("error"));
     }
 
     @Test
@@ -201,13 +194,13 @@ public class LogControllerTest {
         FakeJdbcTemplate fake = new FakeJdbcTemplate();
         fake.generatedId = 123L;
 
-        Log created = sampleLog(123L, 50L, 9L);
+        Log created = sampleLog(123L, 9L, "Bench Press");
         fake.logForCreate = created;
 
         LogController controller = newControllerWithFake(fake);
 
         Map<String, Object> body = new HashMap<>();
-        body.put("workout_id", 50);
+        body.put("exercise", "Bench Press");
         body.put("user_id", 9);
         body.put("sets", 4);
         body.put("reps", 12);
@@ -220,8 +213,7 @@ public class LogControllerTest {
         assertTrue(resp.getBody() instanceof Log);
         Log respLog = (Log) resp.getBody();
         assertEquals(123L, respLog.getId());
-        assertEquals(50L, respLog.getWorkoutId());
         assertEquals(9L, respLog.getUserId());
+        assertEquals("Bench Press", respLog.getExerciseName());
     }
 }
-
