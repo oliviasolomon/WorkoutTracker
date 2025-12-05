@@ -11,108 +11,106 @@ import org.jfree.data.time.TimeSeriesCollection;
 
 import java.awt.image.BufferedImage;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.TimeZone;
+import java.util.*;
 
 /**
  * Tool class for converting an array of logs to a plot with sets, reps, and
- * weight plotted all together. Designed originally for desktop use, later
- * extended to support server-side image generation for web delivery.
+ * weight plotted all together. Groups multiple logs that occur on the same
+ * calendar day into a single plotted point (day-precision).
  *
- * This class generates a multi-axis time-series plot using JFreeChart, where:
- * - Sets and reps share the same (low-range) y-axis.
- * - Weight is plotted on its own (high-range) y-axis.
+ * Averages values per day so the chart produces exactly one tick per day.
  *
- * All data is plotted against workout completion date.
- *
- * @author jbrent22
- * @version Oct 29, 2025
+ * Author: jbrent + oliviasolomon
+ * Version: December 5, 2025
  */
 public class LogGraph {
 
     private final TimeZone zone;
 
-    /**
-     * Sole constructor for the graph class, sets the time zone the logbook is
-     * stored in. The time zone is required because JFreeChart’s date axis
-     * uses Calendar-based operations internally.
-     *
-     * @param zone Time zone in which the user resides
-     */
     public LogGraph(TimeZone zone) {
         this.zone = zone;
     }
 
     /**
-     * Internal helper method for converting the raw logbook entries into a
-     * set of three TimeSeries objects: sets, reps, and weight.
-     *
-     * Defensive: skips null logs and null dates; only adds non-null numeric
-     * values so JFreeChart does not receive invalid datapoints.
-     *
-     * @param logbook Array of log entries containing workout information
-     * @return A TimeSeriesCollection containing sets, reps and weight series
+     * Build a TimeSeriesCollection where logs are first grouped by LocalDate
+     * (calendar day). For each day we compute the average sets, average reps,
+     * and average weight and add a single data-point per series at that Day.
      */
     private TimeSeriesCollection makeLogDataset(Log[] logbook) {
 
-        TimeSeries sets = new TimeSeries("Sets");
-        TimeSeries reps = new TimeSeries("Reps");
-        TimeSeries weight = new TimeSeries("Weight");
+        TimeSeries setsSeries = new TimeSeries("Sets");
+        TimeSeries repsSeries = new TimeSeries("Reps");
+        TimeSeries weightSeries = new TimeSeries("Weight");
 
-        if (logbook == null) {
+        if (logbook == null || logbook.length == 0) {
             TimeSeriesCollection empty = new TimeSeriesCollection(zone);
-            empty.addSeries(sets);
-            empty.addSeries(reps);
-            empty.addSeries(weight);
+            empty.addSeries(setsSeries);
+            empty.addSeries(repsSeries);
+            empty.addSeries(weightSeries);
             return empty;
         }
 
+        // Group logs by LocalDate (tree map to keep chronological order)
+        TreeMap<LocalDate, List<Log>> grouped = new TreeMap<>();
         for (Log log : logbook) {
             if (log == null) continue;
             LocalDateTime dt = log.getDate();
             if (dt == null) continue;
+            LocalDate d = dt.toLocalDate();
+            grouped.computeIfAbsent(d, k -> new ArrayList<>()).add(log);
+        }
 
-            Day day;
-            try {
-                day = timeToDay(dt);
-            } catch (Exception ex) {
-                continue; // skip malformed dates
+        // For each day, compute averages and add one point per series
+        for (Map.Entry<LocalDate, List<Log>> e : grouped.entrySet()) {
+            LocalDate dayKey = e.getKey();
+            List<Log> dayLogs = e.getValue();
+            if (dayLogs.isEmpty()) continue;
+
+            double sumSets = 0.0;
+            double sumReps = 0.0;
+            double sumWeight = 0.0;
+            int countSets = 0;
+            int countReps = 0;
+            int countWeight = 0;
+
+            for (Log l : dayLogs) {
+                Integer s = l.getSets();
+                if (s != null) { sumSets += s; countSets++; }
+                Integer r = l.getReps();
+                if (r != null) { sumReps += r; countReps++; }
+                Double w = l.getWeight();
+                if (w != null) { sumWeight += w; countWeight++; }
             }
 
+            // compute averages (fall back to 0 if no values present)
+            Double avgSets = countSets > 0 ? (sumSets / countSets) : null;
+            Double avgReps = countReps > 0 ? (sumReps / countReps) : null;
+            Double avgWeight = countWeight > 0 ? (sumWeight / countWeight) : null;
+
+            // convert LocalDate -> Day (midnight)
+            LocalDateTime atMidnight = dayKey.atStartOfDay();
+            Day dayPeriod = timeToDay(atMidnight);
+
             try {
-                Integer s = log.getSets();
-                if (s != null) sets.addOrUpdate(day, s);
-
-                Integer r = log.getReps();
-                if (r != null) reps.addOrUpdate(day, r);
-
-                Double w = log.getWeight();
-                if (w != null) weight.addOrUpdate(day, w);
+                if (avgSets != null) setsSeries.addOrUpdate(dayPeriod, avgSets);
+                if (avgReps != null) repsSeries.addOrUpdate(dayPeriod, avgReps);
+                if (avgWeight != null) weightSeries.addOrUpdate(dayPeriod, avgWeight);
             } catch (Exception ex) {
-                // skip problematic datapoints
+                // skip any day that fails to add (defensive)
             }
         }
 
         TimeSeriesCollection collection = new TimeSeriesCollection(zone);
-        collection.addSeries(sets);
-        collection.addSeries(reps);
-        collection.addSeries(weight);
-
+        collection.addSeries(setsSeries);
+        collection.addSeries(repsSeries);
+        collection.addSeries(weightSeries);
         return collection;
     }
 
     /**
-     * Adapter method that converts from LocalDateTime to a JFreeChart Day
-     * object. JFreeChart's time-series API requires RegularTimePeriod types,
-     * not Java time objects, so this wrapper is essential.
-     *
-     * NOTE: Calendar months are 0-indexed → subtract 1. This method sets the
-     * calendar to midnight for the given date so the chart groups by day.
-     *
-     * @param time LocalDateTime stored in Log objects
-     * @return A Day object representing the same calendar date (midnight)
+     * Convert LocalDateTime to JFreeChart Day set to midnight in the configured TimeZone.
      */
     public Day timeToDay(LocalDateTime time) {
         int yr = time.getYear();
@@ -133,15 +131,7 @@ public class LogGraph {
     }
 
     /**
-     * Server-side rendering method that produces a BufferedImage of the chart
-     * instead of creating a GUI window. This is the version intended for use
-     * in your Spring Boot API so graphs can be sent to the front-end.
-     *
-     * This version formats the date axis to show days (MM-dd) using the
-     * configured timezone so the chart groups points by day.
-     *
-     * @param logbook Array of Log objects containing workout session data
-     * @return BufferedImage of the graph rendered at 800x600 resolution
+     * Create a BufferedImage of the chart. Date axis is formatted to show days (MM-dd).
      */
     public BufferedImage createChartImage(Log[] logbook) {
 
@@ -149,7 +139,7 @@ public class LogGraph {
 
         TimeSeriesCollection weightCol = new TimeSeriesCollection(zone);
         if (setRepCol.getSeriesCount() >= 3) {
-            weightCol.addSeries(setRepCol.getSeries(2)); // weight series
+            weightCol.addSeries(setRepCol.getSeries(2));
             setRepCol.removeSeries(2);
         }
 
@@ -165,7 +155,6 @@ public class LogGraph {
         chart.setRangeAxis(0, new NumberAxis("Sets / Reps"));
         chart.setRangeAxis(1, new NumberAxis("Weight (lbs)"));
 
-        // Use DateAxis formatted for days (MM-dd) and respect configured TimeZone
         DateAxis dateAxis = new DateAxis("Date");
         SimpleDateFormat fmt = new SimpleDateFormat("MM-dd");
         fmt.setTimeZone(zone);
@@ -176,7 +165,6 @@ public class LogGraph {
         chart.mapDatasetToRangeAxis(1, 1);
 
         JFreeChart graph = new JFreeChart("Workout Metrics", JFreeChart.DEFAULT_TITLE_FONT, chart, true);
-
         return graph.createBufferedImage(800, 600);
     }
 }
