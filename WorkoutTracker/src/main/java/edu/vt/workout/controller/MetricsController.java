@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -61,7 +62,22 @@ public class MetricsController {
             LIMIT ?
         """;
 
-        List<Log> list = jdbcTemplate.query(sql, new Object[]{limit}, logRowMapper);
-        return list.toArray(new Log[0]);
+        List<Log> raw = jdbcTemplate.query(sql, new Object[]{limit}, logRowMapper);
+
+        List<Log> cleaned = new ArrayList<>();
+        for (Log l : raw) {
+            if (l == null) continue;
+            // require a valid timestamp
+            if (l.getDate() == null) continue;
+            // require at least one non-zero metric (sets, reps or weight)
+            boolean hasMetric = (l.getSets() != 0) || (l.getReps() != 0) || (l.getWeight() != 0.0);
+            if (!hasMetric) continue;
+            cleaned.add(l);
+        }
+
+        // debug: print counts to console so you can verify behavior
+        System.out.println("DEBUG: raw logs = " + raw.size() + ", cleaned logs = " + cleaned.size());
+
+        return cleaned.toArray(new Log[0]);
     }
 }
