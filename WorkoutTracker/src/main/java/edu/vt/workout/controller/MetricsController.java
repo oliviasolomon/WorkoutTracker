@@ -6,7 +6,6 @@ import edu.vt.workout.model.LogGraph;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +29,11 @@ public class MetricsController {
     @GetMapping(value = "/metrics/chart", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getMetricsChart() {
         try {
-            Log[] logs = fetchLogsFromDb();
-            // use graph to create chart image in memory
+            Log[] logs = fetchLogsFromDb(50);
+
             LogGraph graph = new LogGraph(TimeZone.getDefault());
             BufferedImage chartImage = graph.createChartImage(logs);
-            // convert buffered image > byte[]
+
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ImageIO.write(chartImage, "png", baos);
 
@@ -45,15 +44,24 @@ public class MetricsController {
         }
     }
 
-    private Log[] fetchLogsFromDb() {
+    private Log[] fetchLogsFromDb(int limit) {
         String sql = """
-            SELECT id, workout_id, user_id, sets, reps, weight, date
+            SELECT id,
+                   user_id,
+                   exercise_name,
+                   muscle_group,
+                   date,
+                   sets,
+                   reps,
+                   weight,
+                   units,
+                   favorite
             FROM logs
             ORDER BY date DESC
-            LIMIT 50
+            LIMIT ?
         """;
 
-        List<Log> list = jdbcTemplate.query(sql, logRowMapper);
+        List<Log> list = jdbcTemplate.query(sql, new Object[]{limit}, logRowMapper);
         return list.toArray(new Log[0]);
     }
 }
