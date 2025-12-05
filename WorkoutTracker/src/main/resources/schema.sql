@@ -20,3 +20,9 @@ CREATE TABLE IF NOT EXISTS logs (
     favorite BOOLEAN DEFAULT FALSE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
+
+-- standardizing timestamps for metrics chart
+SELECT DATE(timestamp) AS date, COUNT(*)
+FROM workout
+GROUP BY DATE(timestamp)
+ORDER BY DATE(timestamp);
