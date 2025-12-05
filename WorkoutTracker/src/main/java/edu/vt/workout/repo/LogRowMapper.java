@@ -16,10 +16,9 @@ public class LogRowMapper implements RowMapper<Log> {
   @Override
   public Log mapRow(ResultSet rs, int rowNum) throws SQLException {
     Log l = new Log();
-    l.setId(rs.getObject("id", Long.class));
-    l.setUserId(rs.getObject("user_id", Long.class));
-    l.setExerciseName(rs.getString("exercise_name"));
-    l.setMuscleGroup(rs.getString("muscle_group"));
+    l.setId(rs.getLong("id"));
+    l.setUserId(rs.getLong("user_id"));
+    l.setWorkoutId(rs.getLong("workout_id"));
     if (rs.getTimestamp("date") != null) l.setDate(rs.getTimestamp("date").toLocalDateTime());
     l.setSets(rs.getObject("sets", Integer.class));
     l.setReps(rs.getObject("reps", Integer.class));
