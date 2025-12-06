@@ -8,6 +8,9 @@ import org.jfree.chart.renderer.xy.DefaultXYItemRenderer;
 import org.jfree.data.time.Day;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+import org.jfree.chart.axis.DateTickUnit;
+import org.jfree.chart.axis.DateTickUnitType;
+import org.jfree.data.time.TimeSeriesDataItem;
 
 import java.awt.image.BufferedImage;
 import java.text.SimpleDateFormat;
