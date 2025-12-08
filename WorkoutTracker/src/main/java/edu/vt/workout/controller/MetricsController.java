@@ -27,7 +27,7 @@ import java.util.TimeZone;
  * positive metric (sets>0 OR reps>0 OR weight>0.0) to include a point.
  */
 @RestController
-@RequestMapping("/api/metrics")
+@RequestMapping("/metrics")
 @CrossOrigin(origins = {
         "https://workouttracker-d5wa.onrender.com",
         "http://localhost:8080",
@@ -42,11 +42,13 @@ public class MetricsController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    // GET /api/metrics/chart?user_id=1
+    // GET /metrics/chart?user_id=1
     @GetMapping(value = "/chart", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getMetricsChart(
             @RequestParam(value = "user_id", required = false) Long userId) {
         try {
+            System.out.println("HIT /metrics/chart userId=" + userId);
+
             // fetch more in case many are filtered out
             Log[] logs = fetchLogsFromDb(200, userId);
 
@@ -67,7 +69,8 @@ public class MetricsController {
     }
 
     /**
-     * Debug endpoint returning raw rows directly from JDBC.
+     * Debug endpoint returning raw rows directly from JDBC (no RowMapper conversion).
+     * Use in browser: /metrics/debug?user_id=1
      */
     @GetMapping(value = "/debug", produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> debugRows(
