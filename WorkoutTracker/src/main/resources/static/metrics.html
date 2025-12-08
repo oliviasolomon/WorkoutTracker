@@ -22,22 +22,25 @@
       <img id="chart" src="" alt="Workout Chart" style="width:800px;height:600px;">
     </div>
 
+  <img id="chart" src="" alt="Workout Chart" style="width:800px;height:600px;">
+
   <script>
-    async function loadChart() {
+    function loadChart() {
       const userId = localStorage.getItem('user_id');
       let url = '/metrics/chart';
+  
+      const params = [];
       if (userId) {
-        url += `?user_id=${encodeURIComponent(userId)}`;
+        params.push('user_id=' + encodeURIComponent(userId));
+      }
+      // cache-buster to always see latest
+      params.push('t=' + Date.now());
+  
+      if (params.length > 0) {
+        url += '?' + params.join('&');
       }
   
-      const res = await fetch(url);
-      if (!res.ok) {
-        console.error('Chart request failed', res.status, res.statusText);
-        return;
-      }
-      const blob = await res.blob();
-      const imgUrl = URL.createObjectURL(blob);
-      document.getElementById('chart').src = imgUrl;
+      document.getElementById('chart').src = url;
     }
   
     loadChart();
