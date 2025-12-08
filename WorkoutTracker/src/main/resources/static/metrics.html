@@ -22,29 +22,33 @@
       <img id="chart" src="" alt="Workout Chart" style="width:800px;height:600px;">
     </div>
 
-    <script>
-      async function loadChart() {
-        const userId = localStorage.getItem('user_id');
-        let url = '/api/metrics/chart';
-        if (userId) {
-          url += `?user_id=${encodeURIComponent(userId)}`;
-        }
-        
-        const res = await fetch('/metrics/chart');
-        const blob = await res.blob();
-        const imgUrl = URL.createObjectURL(blob);
-        document.getElementById('chart').src = imgUrl;
+  <script>
+    async function loadChart() {
+      const userId = localStorage.getItem('user_id');
+      let url = '/metrics/chart';
+      if (userId) {
+        url += `?user_id=${encodeURIComponent(userId)}`;
       }
-
-      loadChart();
-
-      document.getElementById('logoutBtn').addEventListener('click', () => {
-        localStorage.removeItem('user_id');
-        localStorage.removeItem('username');
-        sessionStorage.clear();
-        window.location.href = 'login.html';
-      });
-    </script>
+  
+      const res = await fetch(url);
+      if (!res.ok) {
+        console.error('Chart request failed', res.status, res.statusText);
+        return;
+      }
+      const blob = await res.blob();
+      const imgUrl = URL.createObjectURL(blob);
+      document.getElementById('chart').src = imgUrl;
+    }
+  
+    loadChart();
+  
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      localStorage.removeItem('user_id');
+      localStorage.removeItem('username');
+      sessionStorage.clear();
+      window.location.href = 'login.html';
+    });
+  </script>
   </div>
 </body>
 </html>
