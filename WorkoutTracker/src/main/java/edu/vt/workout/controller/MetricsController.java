@@ -1,30 +1,26 @@
 package edu.vt.workout.controller;
 
 import edu.vt.workout.model.Log;
-import edu.vt.workout.repo.LogRowMapper;
 import edu.vt.workout.model.LogGraph;
+import edu.vt.workout.repo.LogRowMapper;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.web.bind.annotation.*;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.TimeZone;
 
 /**
- * MetricsController — serves chart PNG and a debug JSON view of raw DB rows.
- * Defensive: avoids NPEs, ignores rows missing dates, requires at least one
- * positive metric (sets>0 OR reps>0 OR weight>0.0) to include a point.
+ * MetricsController: load logs from db and optionally by user_id,
+ * feeds them into loggraph, and returns PNG. also exposes /metrics/debug 
+ * to see the log objects as JSON.
  */
 @RestController
 @RequestMapping("/metrics")
@@ -35,133 +31,86 @@ import java.util.TimeZone;
 })
 public class MetricsController {
 
-    private final JdbcTemplate jdbcTemplate;
-    private final LogRowMapper logRowMapper = new LogRowMapper();
+    private final JdbcTemplate jdbc;
+    private final LogRowMapper mapper = new LogRowMapper();
 
-    public MetricsController(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    @Autowired
+    public MetricsController(JdbcTemplate jdbc) {
+        this.jdbc = jdbc;
     }
 
     // GET /metrics/chart?user_id=1
     @GetMapping(value = "/chart", produces = MediaType.IMAGE_PNG_VALUE)
     public ResponseEntity<byte[]> getMetricsChart(
             @RequestParam(value = "user_id", required = false) Long userId) {
-        try {
-            System.out.println("HIT /metrics/chart userId=" + userId);
 
-            // fetch more in case many are filtered out
-            Log[] logs = fetchLogsFromDb(200, userId);
+        try {
+            List<Log> logs = loadLogs(userId);
+            System.out.println("METRICS: /metrics/chart userId=" + userId +
+                    " rows=" + logs.size());
 
             LogGraph graph = new LogGraph(TimeZone.getTimeZone("America/New_York"));
-            BufferedImage chartImage = graph.createChartImage(logs);
+            BufferedImage img = graph.createChartImage(logs.toArray(new Log[0]));
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            ImageIO.write(chartImage, "png", baos);
+            ImageIO.write(img, "png", baos);
 
             return ResponseEntity
                     .ok()
                     .contentType(MediaType.IMAGE_PNG)
                     .body(baos.toByteArray());
+
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    /**
-     * Debug endpoint returning raw rows directly from JDBC (no RowMapper conversion).
-     * Use in browser: /metrics/debug?user_id=1
-     */
+    // GET /metrics/debug?user_id=1
     @GetMapping(value = "/debug", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> debugRows(
+    public ResponseEntity<List<Log>> debugLogs(
             @RequestParam(value = "user_id", required = false) Long userId) {
-        try {
-            String base = """
-                SELECT *
-                FROM logs
-            """;
 
-            StringBuilder sql = new StringBuilder(base);
-            List<Object> params = new ArrayList<>();
+        List<Log> logs = loadLogs(userId);
+        System.out.println("METRICS: /metrics/debug userId=" + userId +
+                " rows=" + logs.size());
 
-            if (userId != null) {
-                sql.append(" WHERE user_id = ?");
-                params.add(userId);
-            }
-
-            sql.append(" ORDER BY date DESC LIMIT 50");
-
-            List<Map<String, Object>> rows =
-                    jdbcTemplate.queryForList(sql.toString(), params.toArray());
-
-            System.out.println("DEBUG: raw rows = " + rows.size());
-            for (int i = 0; i < Math.min(10, rows.size()); i++) {
-                System.out.println("DEBUG ROW " + i + " -> " + rows.get(i));
-            }
-            return ResponseEntity.ok(rows);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return ResponseEntity.internalServerError().body(Map.of("error", ex.getMessage()));
+        for (int i = 0; i < Math.min(5, logs.size()); i++) {
+            Log l = logs.get(i);
+            System.out.println("DEBUG LOG " + i + " -> id=" + l.getId()
+                    + " user_id=" + l.getUserId()
+                    + " date=" + l.getDate()
+                    + " sets=" + l.getSets()
+                    + " reps=" + l.getReps()
+                    + " weight=" + l.getWeight());
         }
+
+        return ResponseEntity.ok(logs);
     }
 
-    private Log[] fetchLogsFromDb(int limit, Long userId) {
-        String base = """
-            SELECT id,
-                   user_id,
-                   exercise_name,
-                   muscle_group,
-                   date,
-                   sets,
-                   reps,
-                   weight,
-                   units,
-                   favorite
-            FROM logs
-        """;
+    /**
+     * load logs from DB, optionally filtered by user_id, ordered by date ASC.
+     * only drops rows where date is null since loggraph requires a date.
+     */
+    private List<Log> loadLogs(Long userId) {
+        String sqlAll =
+                "SELECT * FROM logs ORDER BY date ASC";
+        String sqlByUser =
+                "SELECT * FROM logs WHERE user_id = ? ORDER BY date ASC";
 
-        StringBuilder sql = new StringBuilder(base);
-        List<Object> params = new ArrayList<>();
-
+        List<Log> raw;
         if (userId != null) {
-            sql.append(" WHERE user_id = ?");
-            params.add(userId);
+            raw = jdbc.query(sqlByUser, new Object[]{userId}, mapper);
+        } else {
+            raw = jdbc.query(sqlAll, mapper);
         }
 
-        sql.append(" ORDER BY date DESC LIMIT ?");
-        params.add(limit);
-
-        List<Log> raw = jdbcTemplate.query(sql.toString(), params.toArray(), logRowMapper);
-
-        List<Log> cleaned = new ArrayList<>();
+        List<Log> filtered = new ArrayList<>();
         for (Log l : raw) {
             if (l == null) continue;
-            if (l.getDate() == null) continue;
-
-            boolean hasMetric =
-                    (l.getSets() != null && l.getSets() > 0) ||
-                    (l.getReps() != null && l.getReps() > 0) ||
-                    (l.getWeight() != null && l.getWeight() > 0.0);
-
-            if (!hasMetric) continue;
-
-            cleaned.add(l);
+            if (l.getDate() == null) continue; // loggraph needs dates
+            filtered.add(l);
         }
-
-        System.out.println("DEBUG: fetched raw=" + raw.size() + ", cleaned=" + cleaned.size());
-        if (!cleaned.isEmpty()) {
-            for (int i = 0; i < Math.min(5, cleaned.size()); i++) {
-                Log s = cleaned.get(i);
-                System.out.println(
-                        "DEBUG CLEAN " + i + " -> id:" + s.getId() +
-                        " date:" + s.getDate() +
-                        " sets:" + s.getSets() +
-                        " reps:" + s.getReps() +
-                        " weight:" + s.getWeight()
-                );
-            }
-        }
-
-        return cleaned.toArray(new Log[0]);
+        return filtered;
     }
 }
