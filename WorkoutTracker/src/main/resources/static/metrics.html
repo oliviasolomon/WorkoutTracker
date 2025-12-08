@@ -24,6 +24,12 @@
 
     <script>
       async function loadChart() {
+        const userId = localStorage.getItem('user_id');
+        let url = '/api/metrics/chart';
+        if (userId) {
+          url += `?user_id=${encodeURIComponent(userId)}`;
+        }
+        
         const res = await fetch('/metrics/chart');
         const blob = await res.blob();
         const imgUrl = URL.createObjectURL(blob);
