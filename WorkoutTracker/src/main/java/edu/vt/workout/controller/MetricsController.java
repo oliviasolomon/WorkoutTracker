@@ -6,6 +6,7 @@ import edu.vt.workout.model.LogGraph;
 
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -26,7 +27,7 @@ import java.util.TimeZone;
  * positive metric (sets>0 OR reps>0 OR weight>0.0) to include a point.
  */
 @RestController
-@RequestMapping("/metrics")
+@RequestMapping("/api/metrics")
 @CrossOrigin(origins = {
         "https://workouttracker-d5wa.onrender.com",
         "http://localhost:8080",
@@ -41,13 +42,14 @@ public class MetricsController {
         this.jdbcTemplate = jdbcTemplate;
     }
 
+    // GET /api/metrics/chart?user_id=1
     @GetMapping(value = "/chart", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> getMetricsChart() {
+    public ResponseEntity<byte[]> getMetricsChart(
+            @RequestParam(value = "user_id", required = false) Long userId) {
         try {
-            // fetch more in case many are filtered
-            Log[] logs = fetchLogsFromDb(200);
+            // fetch more in case many are filtered out
+            Log[] logs = fetchLogsFromDb(200, userId);
 
-            // use fixed timezone so chart is stable
             LogGraph graph = new LogGraph(TimeZone.getTimeZone("America/New_York"));
             BufferedImage chartImage = graph.createChartImage(logs);
 
@@ -65,15 +67,30 @@ public class MetricsController {
     }
 
     /**
-     * Debug endpoint returning raw rows directly from JDBC (no RowMapper conversion).
-     * Use in browser: /metrics/debug
+     * Debug endpoint returning raw rows directly from JDBC.
      */
     @GetMapping(value = "/debug", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> debugRows() {
+    public ResponseEntity<?> debugRows(
+            @RequestParam(value = "user_id", required = false) Long userId) {
         try {
-            List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                    "SELECT * FROM logs ORDER BY date DESC LIMIT 50"
-            );
+            String base = """
+                SELECT *
+                FROM logs
+            """;
+
+            StringBuilder sql = new StringBuilder(base);
+            List<Object> params = new ArrayList<>();
+
+            if (userId != null) {
+                sql.append(" WHERE user_id = ?");
+                params.add(userId);
+            }
+
+            sql.append(" ORDER BY date DESC LIMIT 50");
+
+            List<Map<String, Object>> rows =
+                    jdbcTemplate.queryForList(sql.toString(), params.toArray());
+
             System.out.println("DEBUG: raw rows = " + rows.size());
             for (int i = 0; i < Math.min(10, rows.size()); i++) {
                 System.out.println("DEBUG ROW " + i + " -> " + rows.get(i));
@@ -85,8 +102,8 @@ public class MetricsController {
         }
     }
 
-    private Log[] fetchLogsFromDb(int limit) {
-        String sql = """
+    private Log[] fetchLogsFromDb(int limit, Long userId) {
+        String base = """
             SELECT id,
                    user_id,
                    exercise_name,
@@ -98,19 +115,26 @@ public class MetricsController {
                    units,
                    favorite
             FROM logs
-            ORDER BY date DESC
-            LIMIT ?
         """;
 
-        List<Log> raw = jdbcTemplate.query(sql, new Object[]{limit}, logRowMapper);
+        StringBuilder sql = new StringBuilder(base);
+        List<Object> params = new ArrayList<>();
+
+        if (userId != null) {
+            sql.append(" WHERE user_id = ?");
+            params.add(userId);
+        }
+
+        sql.append(" ORDER BY date DESC LIMIT ?");
+        params.add(limit);
+
+        List<Log> raw = jdbcTemplate.query(sql.toString(), params.toArray(), logRowMapper);
 
         List<Log> cleaned = new ArrayList<>();
         for (Log l : raw) {
             if (l == null) continue;
-            // require a valid timestamp
             if (l.getDate() == null) continue;
 
-            // null-safe check for positive metric values
             boolean hasMetric =
                     (l.getSets() != null && l.getSets() > 0) ||
                     (l.getReps() != null && l.getReps() > 0) ||
@@ -121,7 +145,6 @@ public class MetricsController {
             cleaned.add(l);
         }
 
-        // debug output to application logs
         System.out.println("DEBUG: fetched raw=" + raw.size() + ", cleaned=" + cleaned.size());
         if (!cleaned.isEmpty()) {
             for (int i = 0; i < Math.min(5, cleaned.size()); i++) {
