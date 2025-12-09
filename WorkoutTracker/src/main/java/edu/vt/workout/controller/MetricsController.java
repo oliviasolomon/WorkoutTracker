@@ -13,14 +13,13 @@ import org.springframework.web.bind.annotation.*;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TimeZone;
 
 /**
- * MetricsController: load logs from db and optionally by user_id,
- * feeds them into loggraph, and returns PNG. also exposes /metrics/debug 
- * to see the log objects as JSON.
+ * MetricsController
+ * - /metrics/chart  -> PNG chart built from all rows in logs table
+ * - /metrics/debug  -> JSON list of Log objects used for the chart
  */
 @RestController
 @RequestMapping("/metrics")
@@ -39,15 +38,12 @@ public class MetricsController {
         this.jdbc = jdbc;
     }
 
-    // GET /metrics/chart?user_id=1
+    // GET /metrics/chart
     @GetMapping(value = "/chart", produces = MediaType.IMAGE_PNG_VALUE)
-    public ResponseEntity<byte[]> getMetricsChart(
-            @RequestParam(value = "user_id", required = false) Long userId) {
-
+    public ResponseEntity<byte[]> chart() {
         try {
-            List<Log> logs = loadLogs(userId);
-            System.out.println("METRICS: /metrics/chart userId=" + userId +
-                    " rows=" + logs.size());
+            List<Log> logs = loadAllLogs();
+            System.out.println("METRICS /metrics/chart rows=" + logs.size());
 
             LogGraph graph = new LogGraph(TimeZone.getTimeZone("America/New_York"));
             BufferedImage img = graph.createChartImage(logs.toArray(new Log[0]));
@@ -59,22 +55,17 @@ public class MetricsController {
                     .ok()
                     .contentType(MediaType.IMAGE_PNG)
                     .body(baos.toByteArray());
-
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    // GET /metrics/debug?user_id=1
+    // GET /metrics/debug
     @GetMapping(value = "/debug", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<List<Log>> debugLogs(
-            @RequestParam(value = "user_id", required = false) Long userId) {
-
-        List<Log> logs = loadLogs(userId);
-        System.out.println("METRICS: /metrics/debug userId=" + userId +
-                " rows=" + logs.size());
-
+    public ResponseEntity<List<Log>> debug() {
+        List<Log> logs = loadAllLogs();
+        System.out.println("METRICS /metrics/debug rows=" + logs.size());
         for (int i = 0; i < Math.min(5, logs.size()); i++) {
             Log l = logs.get(i);
             System.out.println("DEBUG LOG " + i + " -> id=" + l.getId()
@@ -84,33 +75,11 @@ public class MetricsController {
                     + " reps=" + l.getReps()
                     + " weight=" + l.getWeight());
         }
-
         return ResponseEntity.ok(logs);
     }
 
-    /**
-     * load logs from DB, optionally filtered by user_id, ordered by date ASC.
-     * only drops rows where date is null since loggraph requires a date.
-     */
-    private List<Log> loadLogs(Long userId) {
-        String sqlAll =
-                "SELECT * FROM logs ORDER BY date ASC";
-        String sqlByUser =
-                "SELECT * FROM logs WHERE user_id = ? ORDER BY date ASC";
-
-        List<Log> raw;
-        if (userId != null) {
-            raw = jdbc.query(sqlByUser, new Object[]{userId}, mapper);
-        } else {
-            raw = jdbc.query(sqlAll, mapper);
-        }
-
-        List<Log> filtered = new ArrayList<>();
-        for (Log l : raw) {
-            if (l == null) continue;
-            if (l.getDate() == null) continue; // loggraph needs dates
-            filtered.add(l);
-        }
-        return filtered;
+    private List<Log> loadAllLogs() {
+        String sql = "SELECT * FROM logs ORDER BY date ASC";
+        return jdbc.query(sql, mapper);
     }
 }
