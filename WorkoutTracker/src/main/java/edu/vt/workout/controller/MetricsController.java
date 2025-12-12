@@ -14,7 +14,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * MetricsController
@@ -45,7 +44,7 @@ public class MetricsController {
             List<Log> logs = loadAllLogs();
             System.out.println("METRICS /metrics/chart rows=" + logs.size());
 
-            LogGraph graph = new LogGraph(TimeZone.getTimeZone("America/New_York"));
+            LogGraph graph = new LogGraph(); // <-- removed timezone normalizer
             BufferedImage img = graph.createChartImage(logs.toArray(new Log[0]));
 
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
